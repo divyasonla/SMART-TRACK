@@ -1,0 +1,119 @@
+{
+  "info": {
+    "_postman_id": "curriculum-api-collection-id",
+    "name": "Curriculum API Starter",
+    "description": "Postman Collection to test the REST API endpoints for the Navgurukul Curriculum.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Seed Curriculum",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/curriculum/seed",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "curriculum",
+            "seed"
+          ]
+        },
+        "description": "Imports and seeds the curriculum data from the local JSON file into MongoDB."
+      },
+      "response": []
+    },
+    {
+      "name": "Get Complete Curriculum",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/curriculum",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "curriculum"
+          ]
+        },
+        "description": "Retrieves the complete curriculum details, including principles, milestones, and phases."
+      },
+      "response": []
+    },
+    {
+      "name": "Get Phase by ID (Phase 1)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/curriculum/phase-1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "curriculum",
+            "phase-1"
+          ]
+        },
+        "description": "Retrieves a specific curriculum phase using its unique ID identifier."
+      },
+      "response": []
+    },
+    {
+      "name": "Get Phase by Slug (Ask Gemini)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/curriculum/ask-gemini",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "curriculum",
+            "ask-gemini"
+          ]
+        },
+        "description": "Retrieves a specific curriculum phase using its URL-friendly semantic slug."
+      },
+      "response": []
+    },
+    {
+      "name": "Get Phase (Not Found Exception)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/curriculum/non-existent-phase",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "curriculum",
+            "non-existent-phase"
+          ]
+        },
+        "description": "Simulates requesting a non-existent phase to verify the 404 error response format."
+      },
+      "response": []
+    }
+  ]
+}

@@ -18,8 +18,19 @@ const path = require('path');
 
 const connectDB = require('./config/db');
 const taskRoutes = require('./routes/taskRoutes');
+const curriculumRoutes = require('./routes/curriculumRoutes');
+const studentRoutes = require('./routes/studentRoutes');
+const phaseRoutes = require('./routes/phaseRoutes');
+const goalRoutes = require('./routes/goalRoutes');
+const progressRoutes = require('./routes/progressRoutes');
+const reflectionRoutes = require('./routes/reflectionRoutes');
 const notFound = require('./middleware/notFound');
 const errorHandler = require('./middleware/errorHandler');
+
+// NEW: add studentSummary route
+const studentSummaryRoutes = require('./routes/studentSummaryRoutes');
+// NEW: add dailyRecord route (DailyRecord model + handlers live in Student.js)
+const dailyRecordRoutes = require('./routes/dailyRecordRoutes');
 
 // Initialize the Express application
 const app = express();
@@ -54,7 +65,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', (req, res) => {
   res.status(200).json({
     status: 'success',
-    message: 'Welcome to the Production-Ready Backend API Starter!',
+    message: 'Welcome to the Goal & Reflection Tracker API!',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
   });
@@ -62,6 +73,17 @@ app.get('/', (req, res) => {
 
 // Mounted API routes
 app.use('/api/v1/tasks', taskRoutes);
+app.use('/api/curriculum', curriculumRoutes);
+
+// Mount student summary BEFORE generic student routes to avoid wildcard conflicts
+app.use('/api/students', studentSummaryRoutes);
+app.use('/api/students', studentRoutes);
+
+app.use('/api/phases', phaseRoutes);
+app.use('/api/goals', goalRoutes);
+app.use('/api/progress', progressRoutes);
+app.use('/api/reflections', reflectionRoutes);
+app.use('/api/daily-records', dailyRecordRoutes);
 
 // --- 6. Error Handling Middlewares ---
 // Fallback route for resources not found (404)
@@ -69,6 +91,8 @@ app.use(notFound);
 
 // Centralized error handler to catch all errors passed to next()
 app.use(errorHandler);
+
+
 
 // --- 7. Server Initialization ---
 const PORT = process.env.PORT || 5000;
