@@ -11,24 +11,25 @@ export const Button = ({
   fullWidth = false,
   ...props
 }) => {
-  const baseClasses = "inline-flex items-center justify-center font-medium rounded-xl transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2";
+  const baseClasses = "inline-flex items-center justify-center font-bold uppercase tracking-wider border-[3px] border-[var(--border-color)] transition-all duration-200 focus:outline-none";
   const sizeClasses = "px-6 py-3 text-sm";
   
   const variants = {
-    primary: "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 shadow-md",
-    secondary: "bg-purple-600 text-white hover:bg-purple-700 focus:ring-purple-500 shadow-md",
-    outline: "border-2 border-slate-200 text-slate-700 hover:border-blue-600 hover:text-blue-600 focus:ring-blue-500 bg-white",
-    ghost: "text-slate-600 hover:bg-slate-100 focus:ring-slate-500",
-    danger: "bg-red-500 text-white hover:bg-red-600 focus:ring-red-500 shadow-md",
-    success: "bg-green-500 text-white hover:bg-green-600 focus:ring-green-500 shadow-md"
+    primary: "bg-[var(--color-primary)] text-[var(--bg-main)] shadow-[4px_4px_0px_var(--shadow-color)] hover:shadow-[6px_6px_0px_var(--shadow-color)]",
+    secondary: "bg-[var(--color-secondary)] text-[var(--bg-main)] shadow-[4px_4px_0px_var(--shadow-color)] hover:shadow-[6px_6px_0px_var(--shadow-color)]",
+    outline: "bg-[var(--bg-main)] text-[var(--text-main)] shadow-[4px_4px_0px_var(--shadow-color)] hover:shadow-[6px_6px_0px_var(--shadow-color)] hover:bg-[var(--color-accent)] hover:text-[var(--bg-main)]",
+    ghost: "border-transparent text-[var(--text-main)] hover:bg-[var(--color-primary)] hover:border-[var(--border-color)] hover:text-[var(--bg-main)] hover:shadow-[4px_4px_0px_var(--shadow-color)]",
+    danger: "bg-[#ff4757] text-white shadow-[4px_4px_0px_var(--shadow-color)] hover:shadow-[6px_6px_0px_var(--shadow-color)]",
+    success: "bg-[#2ed573] text-white shadow-[4px_4px_0px_var(--shadow-color)] hover:shadow-[6px_6px_0px_var(--shadow-color)]"
   };
 
   const widthClass = fullWidth ? "w-full" : "";
 
   return (
     <motion.button
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
+      whileHover={{ y: -2, x: -2 }}
+      whileTap={{ y: 2, x: 2, boxShadow: "0px 0px 0px var(--shadow-color)" }}
+      transition={{ type: "spring", stiffness: 500, damping: 30 }}
       type={type}
       onClick={onClick}
       className={`${baseClasses} ${sizeClasses} ${variants[variant]} ${widthClass} ${className}`}
