@@ -4,8 +4,14 @@ import { Flame, Target, Trophy, Clock } from 'lucide-react';
 import { Card, CardBody, CardHeader } from '../../components/ui/Card';
 import { CircularProgress, ProgressBar } from '../../components/ui/Progress';
 import { mockUser, mockDailyMotivation, mockAccountability } from '../../data/mockData';
+import { useAuth } from '../../context/AuthContext';
 
 export const Dashboard = () => {
+  const { user } = useAuth();
+
+  // Use the logged-in user, fall back to mockUser if empty
+  const currentUser = user || mockUser;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -17,13 +23,13 @@ export const Dashboard = () => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-800">
-            Good Morning, {mockUser.name} 👋
+            Good Morning, {currentUser.name} 👋
           </h1>
           <p className="text-slate-500 mt-1">Let's make today count.</p>
         </div>
         <div className="flex items-center gap-3 bg-white/60 px-4 py-2 rounded-xl border border-slate-200 shadow-sm backdrop-blur-sm">
           <Flame className="w-5 h-5 text-orange-500" />
-          <span className="font-semibold text-slate-700">{mockUser.streak} Day Streak</span>
+          <span className="font-semibold text-slate-700">{currentUser.streak || 0} Day Streak</span>
         </div>
       </div>
 

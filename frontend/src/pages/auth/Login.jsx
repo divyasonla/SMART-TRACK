@@ -1,17 +1,34 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { LogIn } from 'lucide-react';
+import { LogIn, AlertCircle } from 'lucide-react';
 import { Card, CardBody } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
+import { useAuth } from '../../context/AuthContext';
 
 export const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleLogin = (e) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    navigate('/dashboard');
+    setLoading(true);
+    setErrorMsg(null);
+
+    try {
+      await login(email, password);
+      navigate('/dashboard');
+    } catch (err) {
+      setErrorMsg(err.message || 'Incorrect email or password.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -38,30 +55,58 @@ export const Login = () => {
               <p className="text-slate-500 mt-2">Sign in to your account to continue</p>
             </div>
 
+            {/* Error Message Box */}
+            {errorMsg && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-3 text-red-600 text-sm"
+              >
+                <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                <span>{errorMsg}</span>
+              </motion.div>
+            )}
+
             <form onSubmit={handleLogin}>
               <Input
                 label="Email Address"
                 type="email"
                 placeholder="sheikh@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={loading}
               />
               <Input
                 label="Password"
                 type="password"
                 placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={loading}
               />
 
               <div className="flex justify-between items-center mb-6">
                 <label className="flex items-center text-sm text-slate-600">
-                  <input type="checkbox" className="mr-2 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                  <input
+                    type="checkbox"
+                    className="mr-2 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    disabled={loading}
+                  />
                   Remember me
                 </label>
                 <a href="#" className="text-sm text-blue-600 hover:underline">Forgot password?</a>
               </div>
 
-              <Button type="submit" fullWidth icon={LogIn} className="mb-4 text-base">
-                Login
+              <Button
+                type="submit"
+                fullWidth
+                icon={LogIn}
+                className="mb-4 text-base"
+                disabled={loading}
+              >
+                {loading ? 'Logging in...' : 'Login'}
               </Button>
 
               <div className="relative my-6">
@@ -73,7 +118,13 @@ export const Login = () => {
                 </div>
               </div>
 
-              <Button type="button" variant="outline" fullWidth className="text-base flex justify-center">
+              <Button
+                type="button"
+                variant="outline"
+                fullWidth
+                className="text-base flex justify-center"
+                disabled={loading}
+              >
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                   <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />

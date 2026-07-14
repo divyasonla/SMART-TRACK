@@ -1,9 +1,10 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Target, Activity, BarChart2, User, LogOut } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { useAuth } from '../../context/AuthContext';
 
 export const Sidebar = () => {
+  const { logout } = useAuth();
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Phases', path: '/phases', icon: Activity },
@@ -48,10 +49,13 @@ export const Sidebar = () => {
         </div>
         
         <div className="p-4 border-t border-slate-100">
-          <NavLink to="/" className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all">
+          <button
+            onClick={logout}
+            className="flex items-center gap-3 w-full px-4 py-3 text-slate-500 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all cursor-pointer text-left text-sm font-medium border-0 bg-transparent"
+          >
             <LogOut className="w-5 h-5" />
             <span>Logout</span>
-          </NavLink>
+          </button>
         </div>
       </div>
 

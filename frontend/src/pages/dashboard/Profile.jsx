@@ -5,9 +5,14 @@ import { Card, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { mockUser, mockPhases } from '../../data/mockData';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 export const Profile = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  // Use the logged-in user, fall back to mockUser if empty
+  const currentUser = user || mockUser;
 
   return (
     <motion.div
@@ -28,11 +33,11 @@ export const Profile = () => {
           <CardBody className="pt-20 pb-8 px-8 relative z-10">
             <div className="flex flex-col sm:flex-row items-center sm:items-end gap-6 mb-8">
               <div className="w-24 h-24 rounded-full border-4 border-white shadow-xl bg-white overflow-hidden flex-shrink-0">
-                <img src={mockUser.avatarUrl} alt={mockUser.name} className="w-full h-full object-cover" />
+                <img src={currentUser.avatarUrl} alt={currentUser.name} className="w-full h-full object-cover" />
               </div>
               <div className="text-center sm:text-left flex-1">
-                <h2 className="text-2xl font-bold text-slate-800">{mockUser.name}</h2>
-                <p className="text-slate-500 font-medium">Student at SMART-TRACK</p>
+                <h2 className="text-2xl font-bold text-slate-800">{currentUser.name}</h2>
+                <p className="text-slate-500 font-medium">{currentUser.role || 'Student'} at SMART-TRACK</p>
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" icon={Edit3} className="px-4 py-2 text-sm">Edit Profile</Button>
@@ -44,21 +49,23 @@ export const Profile = () => {
                 <Mail className="w-5 h-5 text-slate-400 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-slate-500">Email Address</p>
-                  <p className="font-medium text-slate-800">{mockUser.email}</p>
+                  <p className="font-medium text-slate-800">{currentUser.email}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-slate-400 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-slate-500">Campus</p>
-                  <p className="font-medium text-slate-800">{mockUser.campus}</p>
+                  <p className="font-medium text-slate-800">{currentUser.campus}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Calendar className="w-5 h-5 text-slate-400 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-slate-500">Joining Date</p>
-                  <p className="font-medium text-slate-800">{new Date(mockUser.joiningDate).toLocaleDateString()}</p>
+                  <p className="font-medium text-slate-800">
+                    {currentUser.joiningDate ? new Date(currentUser.joiningDate).toLocaleDateString() : 'N/A'}
+                  </p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -66,7 +73,7 @@ export const Profile = () => {
                 <div>
                   <p className="text-sm font-medium text-slate-500">Current Phase</p>
                   <p className="font-medium text-slate-800">
-                    Phase {mockUser.currentPhase}: {mockPhases.find(p => p.number === mockUser.currentPhase)?.name}
+                    Phase {currentUser.currentPhase || 1}: {mockPhases.find(p => p.number === (currentUser.currentPhase || 1))?.name || 'Foundation'}
                   </p>
                 </div>
               </div>
@@ -83,14 +90,18 @@ export const Profile = () => {
                 Achievements
               </h3>
               <div className="space-y-3">
-                {mockUser.achievements.map((achievement, index) => (
-                  <div key={index} className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600">
-                      <Award className="w-4 h-4" />
+                {currentUser.achievements && currentUser.achievements.length > 0 ? (
+                  currentUser.achievements.map((achievement, index) => (
+                    <div key={index} className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                      <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600">
+                        <Award className="w-4 h-4" />
+                      </div>
+                      <span className="font-medium text-slate-700">{achievement}</span>
                     </div>
-                    <span className="font-medium text-slate-700">{achievement}</span>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-sm text-slate-400 italic">No achievements unlocked yet.</p>
+                )}
               </div>
             </CardBody>
           </Card>
@@ -101,7 +112,7 @@ export const Profile = () => {
                 variant="danger" 
                 fullWidth 
                 icon={LogOut} 
-                onClick={() => navigate('/')}
+                onClick={logout}
               >
                 Logout
               </Button>
