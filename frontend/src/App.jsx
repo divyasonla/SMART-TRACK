@@ -1,5 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { ProtectedRoute } from './components/layout/ProtectedRoute';
 
 // Layout
 import { DashboardLayout } from './components/layout/DashboardLayout';
@@ -18,26 +20,30 @@ import { Profile } from './pages/dashboard/Profile';
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Auth Routes */}
-        <Route path="/" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Auth Routes */}
+          <Route path="/" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
 
-        {/* Dashboard Routes */}
-        <Route element={<DashboardLayout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/phases" element={<Phases />} />
-          <Route path="/goals/new" element={<GoalSetting />} />
-          <Route path="/reflection" element={<Reflection />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/profile" element={<Profile />} />
-        </Route>
+          {/* Protected Dashboard Routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<DashboardLayout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/phases" element={<Phases />} />
+              <Route path="/goals/new" element={<GoalSetting />} />
+              <Route path="/reflection" element={<Reflection />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/profile" element={<Profile />} />
+            </Route>
+          </Route>
 
-        {/* Fallback Route */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+          {/* Fallback Route */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
