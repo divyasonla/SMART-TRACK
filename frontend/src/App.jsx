@@ -9,10 +9,9 @@ import { Login } from './pages/auth/Login';
 import { SignUp } from './pages/auth/SignUp';
 
 // Dashboard Pages
-import { Dashboard } from './pages/dashboard/Dashboard';
 import { Phases } from './pages/dashboard/Phases';
-import { GoalSetting } from './pages/dashboard/GoalSetting';
-import { Reflection } from './pages/dashboard/Reflection';
+import { GoalWorkspace } from './pages/dashboard/GoalWorkspace';
+import { Tracker } from './pages/dashboard/Tracker';
 import { Analytics } from './pages/dashboard/Analytics';
 import { Profile } from './pages/dashboard/Profile';
 
@@ -26,10 +25,9 @@ function App() {
 
         {/* Dashboard Routes */}
         <Route element={<DashboardLayout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/phases" element={<Phases />} />
-          <Route path="/goals/new" element={<GoalSetting />} />
-          <Route path="/reflection" element={<Reflection />} />
+          <Route path="/workspace" element={<GoalWorkspace />} />
+          <Route path="/tracker" element={<Tracker />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/profile" element={<Profile />} />
         </Route>

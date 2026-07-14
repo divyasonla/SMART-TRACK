@@ -1,39 +1,130 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap');
 
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'Poppins', sans-serif;
-  
-  --color-primary: #3b82f6;      /* Blue */
-  --color-primary-hover: #2563eb;
-  --color-secondary: #a855f7;    /* Purple */
-  --color-secondary-hover: #9333ea;
-  --color-success: #22c55e;      /* Green */
-  --color-warning: #f97316;      /* Orange */
-  --color-error: #ef4444;        /* Red */
-  
-  --color-bg: #f8fafc;           /* Very Light Gray */
-  --color-card: rgba(255, 255, 255, 0.7);
-  --color-card-border: rgba(255, 255, 255, 0.3);
-  
-  --color-text: #334155;         /* Slate 700 */
-  --color-text-light: #64748b;   /* Slate 500 */
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+  --font-heading: 'Space Grotesk', sans-serif;
 }
 
-@layer utilities {
-  .glass {
-    @apply bg-card backdrop-blur-md border border-card-border shadow-lg;
-  }
-  .glass-dark {
-    @apply bg-black/20 backdrop-blur-lg border border-white/10 shadow-xl;
-  }
+/* Dynamic Theming Architecture */
+:root {
+  /* Default Manga Light Theme */
+  --bg-main: #ffffff;
+  --bg-card: #f8f9fa;
+  --text-main: #111111;
+  --text-muted: #666666;
+  --border-color: #111111;
+  
+  --color-primary: #3b82f6;      /* Bright Blue */
+  --color-secondary: #ff4757;    /* Strong Red */
+  --color-accent: #fbc531;       /* Yellow */
+  
+  --shadow-color: #111111;
+}
+
+[data-theme="dark"] {
+  --bg-main: #0f0f13;
+  --bg-card: #1c1c21;
+  --text-main: #f1f1f1;
+  --text-muted: #888888;
+  --border-color: #444444;
+  
+  --color-primary: #4facfe;      /* Neon Cyan */
+  --color-secondary: #ff0844;    /* Neon Pink */
+  --color-accent: #f9ca24;       /* Neon Yellow */
+  
+  --shadow-color: #000000;
+}
+
+[data-theme="cyberpunk"] {
+  --bg-main: #fcee0a; /* Cyberpunk Yellow */
+  --bg-card: #000000;
+  --text-main: #ffffff;
+  --text-muted: #aaaaaa;
+  --border-color: #00e5ff; /* Cyan border */
+  
+  --color-primary: #ff003c;      /* Neon Red */
+  --color-secondary: #00e5ff;    /* Neon Cyan */
+  --color-accent: #00ff00;       /* Matrix Green */
+  
+  --shadow-color: #ff003c; /* Red shadows */
+}
+
+[data-theme="mecha"] {
+  --bg-main: #2d1b54; /* Deep Purple */
+  --bg-card: #1b1031;
+  --text-main: #b8e994; /* EVA Green text */
+  --text-muted: #786fa6;
+  --border-color: #78e08f; /* Neon Green border */
+  
+  --color-primary: #f8a5c2;      /* Soft Pink */
+  --color-secondary: #78e08f;    /* Neon Green */
+  --color-accent: #f6b93b;       /* Orange */
+  
+  --shadow-color: #0a0410;
 }
 
 body {
-  font-family: 'Poppins', sans-serif;
-  background-color: var(--color-bg);
-  background-image: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  color: var(--color-text);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-main);
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  /* Add subtle diagonal tech lines background */
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(128, 128, 128, 0.03) 10px,
+    rgba(128, 128, 128, 0.03) 20px
+  );
+}
+
+h1, h2, h3, h4, h5, h6, .anime-heading {
+  font-family: 'Space Grotesk', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
+@layer utilities {
+  /* Neo-Brutalist 3D Card Utility */
+  .neo-card {
+    background-color: var(--bg-card);
+    color: var(--text-main);
+    border: 3px solid var(--border-color);
+    box-shadow: 6px 6px 0px var(--shadow-color);
+    border-radius: 0px; /* Sharp corners for anime/tech feel */
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  
+  .neo-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 8px 8px 0px var(--shadow-color);
+  }
+
+  /* Text selection highlight */
+  ::selection {
+    background-color: var(--color-primary);
+    color: var(--bg-main);
+  }
+}
+
+/* Custom Scrollbar for a premium feel */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
+  border-left: 2px solid var(--border-color);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border: 2px solid var(--border-color);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-secondary);
 }

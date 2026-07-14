@@ -2,13 +2,14 @@ import React from 'react';
 import { motion } from 'framer-motion';
 
 export const Card = ({ children, className = '', hover = false, ...props }) => {
-  const baseClasses = "bg-white/70 backdrop-blur-md border border-white/30 shadow-lg rounded-2xl overflow-hidden";
+  const baseClasses = "neo-card overflow-hidden transition-all duration-300";
   
   if (hover) {
     return (
       <motion.div
-        whileHover={{ y: -5, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" }}
-        className={`${baseClasses} ${className}`}
+        whileHover={{ y: -4, x: -4, boxShadow: "8px 8px 0px var(--shadow-color)" }}
+        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        className={`${baseClasses} hover:border-[var(--color-primary)] ${className}`}
         {...props}
       >
         {children}
@@ -24,7 +25,7 @@ export const Card = ({ children, className = '', hover = false, ...props }) => {
 };
 
 export const CardHeader = ({ children, className = '' }) => (
-  <div className={`px-6 py-4 border-b border-slate-100/50 ${className}`}>
+  <div className={`px-6 py-4 border-b-4 border-[var(--border-color)] bg-[var(--bg-main)] ${className}`}>
     {children}
   </div>
 );
@@ -36,7 +37,7 @@ export const CardBody = ({ children, className = '' }) => (
 );
 
 export const CardFooter = ({ children, className = '' }) => (
-  <div className={`px-6 py-4 bg-slate-50/50 border-t border-slate-100/50 ${className}`}>
+  <div className={`px-6 py-4 border-t-4 border-[var(--border-color)] bg-[var(--bg-main)] ${className}`}>
     {children}
   </div>
 );
