@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const AppError = require('../utils/AppError');
 const catchAsync = require('../utils/catchAsync');
+const { Student } = require('../models/Student');
 
 const router = express.Router();
 
@@ -13,17 +14,22 @@ const router = express.Router();
  * Why 'date' is duplicated at both document level and item level:
  * 
  * 1. Document level 'date': Standardizes the document boundary (one document per student per day). 
- *    Enables efficient unique indexing on { studentId, date } and fast document-level lookups.
+ *    Enables efficient unique indexing on { email, date } and fast lookups.
  * 2. Item level 'date': Provides redundant storage at the subdocument level. This allows easier 
- *    querying, filtering, and aggregation (e.g., via MongoDB $unwind or direct subdocument filters) 
- *    later on without needing to reference the parent document's fields in complex pipeline stages.
+ *    querying, filtering, and aggregation (e.g., via MongoDB $unwind) later.
  */
 const DailyRecordSchema = new mongoose.Schema(
   {
     studentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Student',
-      required: [true, 'studentId is required.'],
+      required: false, // studentId is now optional
+    },
+    email: {
+      type: String,
+      required: [true, 'Student email is required.'],
+      trim: true,
+      lowercase: true,
     },
     date: {
       type: Date,
@@ -33,7 +39,7 @@ const DailyRecordSchema = new mongoose.Schema(
       {
         goalId: String,
         description: String,
-        date: Date, // Redundant copy of top-level date
+        date: Date,
       },
     ],
     reflections: [
@@ -44,7 +50,7 @@ const DailyRecordSchema = new mongoose.Schema(
           enum: ['sufficient', 'insufficient'],
         },
         reflectionText: String,
-        date: Date, // Redundant copy of top-level date
+        date: Date,
       },
     ],
     revisions: [
@@ -52,7 +58,7 @@ const DailyRecordSchema = new mongoose.Schema(
         topic: String,
         sourceGoalId: String,
         reason: String,
-        date: Date, // Redundant copy of top-level date
+        date: Date,
       },
     ],
   },
@@ -61,11 +67,16 @@ const DailyRecordSchema = new mongoose.Schema(
   }
 );
 
-// One record per student per day
-DailyRecordSchema.index({ studentId: 1, date: 1 }, { unique: true });
+// One record per student email per day
+DailyRecordSchema.index({ email: 1, date: 1 }, { unique: true });
 
 // Check if model already exists to avoid compiling issues during reloads
 const DailyRecord = mongoose.models.DailyRecord || mongoose.model('DailyRecord', DailyRecordSchema);
+
+// Programmatically drop the old unique index on studentId to prevent conflicts on production databases
+DailyRecord.collection.dropIndex('studentId_1_date_1').catch(() => {
+  // Ignore error if index doesn't exist
+});
 
 // ──────────────────────────────────────────────
 // 2. DATE NORMALIZATION HELPERS
@@ -113,41 +124,56 @@ const endOfDayUTC = (dateStr) => {
 /**
  * POST /
  * Create or update (upsert) a DailyRecord.
- * Accepts { studentId, date, goals, reflections, revisions } in the body.
- * 
- * How the per-item duplicate prevention works:
- * 
- * 1. Prior to running findOneAndUpdate, we query the DB to check if a DailyRecord exists 
- *    for this student on this normalized date.
- * 2. If the document exists, we extract arrays of existing goals, reflections, and revisions.
- * 3. We filter out any incoming items that match our duplicate criteria:
- *    - Goals / Reflections: matching 'goalId' and the target date.
- *    - Revisions: matching 'topic' + 'sourceGoalId' and the target date.
- * 4. We map over the non-duplicate items and automatically attach the nested 'date' property.
- * 5. Finally, we execute the update using MongoDB's $push with $each on a single findOneAndUpdate call. 
- *    If an array is omitted from the request payload, it is completely ignored to preserve existing data.
+ * Accepts { studentId, email, date, goals, reflections, revisions } in the body.
  */
 router.post(
   '/',
   catchAsync(async (req, res, next) => {
-    const { studentId, date } = req.body;
+    let { studentId, email, date } = req.body;
 
-    // Validate required fields
-    if (!studentId) {
-      return next(new AppError('studentId is required.', 400));
-    }
-    if (!mongoose.Types.ObjectId.isValid(studentId)) {
-      return next(new AppError('Invalid studentId format.', 400));
-    }
+    // Validate date presence
     if (!date) {
       return next(new AppError('date is required (YYYY-MM-DD).', 400));
     }
 
+    // Require at least email or studentId to identify the student
+    if (!email && !studentId) {
+      return next(new AppError('Either studentId or email is required.', 400));
+    }
+
+    // Try to resolve studentId if only email is provided (non-blocking lookup)
+    if (email && !studentId) {
+      email = email.toLowerCase().trim();
+      const student = await Student.findOne({ email });
+      if (student) {
+        studentId = student._id;
+      }
+    }
+
+    // Resolve email if studentId is provided
+    if (studentId && !email) {
+      if (!mongoose.Types.ObjectId.isValid(studentId)) {
+        return next(new AppError('Invalid studentId format.', 400));
+      }
+      const student = await Student.findById(studentId);
+      if (student) {
+        email = student.email;
+      } else {
+        return next(new AppError('Student with the provided ID does not exist.', 404));
+      }
+    }
+
+    // Final validation of email existence
+    if (!email) {
+      return next(new AppError('Could not resolve student email.', 400));
+    }
+
+    email = email.toLowerCase().trim();
     // Normalize date to midnight UTC
     const normalizedDate = normalizeDateToUTC(date);
 
-    // Fetch existing document to check for duplicate sub-items
-    const existingRecord = await DailyRecord.findOne({ studentId, date: normalizedDate });
+    // Fetch existing document to check for duplicate sub-items by email & date
+    const existingRecord = await DailyRecord.findOne({ email, date: normalizedDate });
 
     const update = {};
     const pushObj = {};
@@ -215,14 +241,21 @@ router.post(
       update.$push = pushObj;
     }
 
+    // Update the email and conditionally set studentId if resolved
+    update.$set = {
+      email,
+    };
+    if (studentId) {
+      update.$set.studentId = studentId;
+    }
+
     // Set key identifiers on insert
     update.$setOnInsert = {
-      studentId,
       date: normalizedDate,
     };
 
     const record = await DailyRecord.findOneAndUpdate(
-      { studentId, date: normalizedDate },
+      { email, date: normalizedDate },
       update,
       {
         new: true,
@@ -248,21 +281,26 @@ router.post(
 /**
  * GET /
  * Retrieve DailyRecords matching the filters.
- * Supports: studentId, date, startDate, endDate
+ * Supports: studentId, email, date, startDate, endDate
  */
 router.get(
   '/',
   catchAsync(async (req, res, next) => {
-    const { studentId, date, startDate, endDate } = req.query;
+    const { studentId, email, date, startDate, endDate } = req.query;
 
     const filter = {};
 
-    // Filter by student if provided
+    // Filter by studentId if provided
     if (studentId) {
       if (!mongoose.Types.ObjectId.isValid(studentId)) {
         return next(new AppError('Invalid studentId format.', 400));
       }
       filter.studentId = studentId;
+    }
+
+    // Filter by email if provided
+    if (email) {
+      filter.email = email.toLowerCase().trim();
     }
 
     // Filter by date or date range
