@@ -12,13 +12,13 @@ export const mockUser = {
 };
 
 export const mockPhases = [
-  { id: 1, number: 1, name: 'Onboarding & Foundation', progress: 100, status: 'Completed' },
-  { id: 2, number: 2, name: 'Goal Setting Mastery', progress: 100, status: 'Completed' },
-  { id: 3, number: 3, name: 'Execution & Consistency', progress: 65, status: 'In Progress' },
-  { id: 4, number: 4, name: 'Advanced Strategies', progress: 0, status: 'Locked' },
-  { id: 5, number: 5, name: 'Leadership & Influence', progress: 0, status: 'Locked' },
-  { id: 6, number: 6, name: 'Peak Performance', progress: 0, status: 'Locked' },
-  { id: 7, number: 7, name: 'Mastery & Legacy', progress: 0, status: 'Locked' },
+  { id: 1, number: 1, name: 'Onboarding & Foundation', progress: 100, status: 'Completed', deadline: '2026-07-01' },
+  { id: 2, number: 2, name: 'Goal Setting Mastery', progress: 100, status: 'Completed', deadline: '2026-07-10' },
+  { id: 3, number: 3, name: 'Execution & Consistency', progress: 65, status: 'In Progress', deadline: '2026-07-30' },
+  { id: 4, number: 4, name: 'Advanced Strategies', progress: 0, status: 'Locked', deadline: '2026-08-15' },
+  { id: 5, number: 5, name: 'Leadership & Influence', progress: 0, status: 'Locked', deadline: '2026-08-30' },
+  { id: 6, number: 6, name: 'Peak Performance', progress: 0, status: 'Locked', deadline: '2026-09-15' },
+  { id: 7, number: 7, name: 'Mastery & Legacy', progress: 0, status: 'Locked', deadline: '2026-09-30' },
 ];
 
 export const mockDailyMotivation = "Success is not final, failure is not fatal: it is the courage to continue that counts.";
