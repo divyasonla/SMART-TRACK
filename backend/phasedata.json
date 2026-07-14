@@ -1,0 +1,180 @@
+[
+  {
+    "phase": 1,
+    "title": "Student Profile & Course Portal (HTML Only)",
+    "timeline": "5 days",
+    "learning_concept": [
+      "HTML Document Structure (<html>, <head>, <title>, <body>)",
+      "HTML Text Formatting (<h1>-<h6>, <p>, <strong>, <em>)",
+      "HTML Lists (<ul>, <ol>, <li>)",
+      "HTML Images (<img>, src, alt attributes)",
+      "HTML Tables (<table>, caption, thead, tbody, tfoot, tr, th, td)",
+      "HTML Forms (<form>, <label>, <input>, <textarea>, <select>, <option>, <button>)",
+      "Semantic HTML (<header>, <footer>, <nav>, <main>, <address>)",
+      "Relative vs Absolute Paths"
+    ],
+    "learning_outcome": [
+      "Gain a solid understanding of basic HTML structure",
+      "Be proficient in using common HTML tags for text, lists, links, images, tables, and forms",
+      "Understand how to build a multi-page website and link pages together",
+      "Develop foundational knowledge of semantic HTML",
+      "Appreciate the separation of concerns by working only with HTML"
+    ]
+  },
+  {
+    "phase": 2,
+    "title": "Dressing Up Your Websites with CSS",
+    "timeline": "13 days",
+    "learning_concept": [
+      "CSS Resetting and Base Styling (margin: 0, padding: 0, box-sizing: border-box)",
+      "Typography (font-family, font-size, font-weight, line-height)",
+      "Box Model (padding, margin, border)",
+      "Common Structural Styling (<header>, <nav>, <main>, <footer>)",
+      "Link Styling and Pseudo-classes (a:hover, a:visited, a:active)",
+      "Flexbox Layout (display: flex, flex-wrap, gap, flex-basis, flex-grow, flex-direction)",
+      "CSS Grid Layout (display: grid, grid-template-columns, repeat, auto-fit, minmax, gap, alignment, spanning)",
+      "Form Styling (inputs, textareas, select, buttons, input:focus, button:hover)",
+      "Table Styling (border-collapse, zebra striping, nth-child, row hovers)",
+      "CSS Transitions and Keyframe Animations (@keyframes, opacity)",
+      "Responsive Design & Media Queries (breakpoints, mobile-first/desktop adjustments)"
+    ],
+    "learning_outcome": [
+      "Learn CSS fundamentals and styling plain pages",
+      "Apply colors, fonts, spacing, and borders to HTML elements",
+      "Master layout techniques using Flexbox and Grid",
+      "Style forms for usability and tables for legibility",
+      "Make websites responsive using media queries for mobile, tablet, and desktop"
+    ]
+  },
+  {
+    "phase": 3,
+    "title": "Bringing Your Websites to Life with JavaScript",
+    "timeline": "20 days",
+    "learning_concept": [
+      "JavaScript Variables and Data Types (numbers, strings, booleans)",
+      "JavaScript Operators (comparison and mathematical)",
+      "JavaScript Strings and Template Literals",
+      "Arrays and Objects",
+      "JavaScript Functions (parameters, arguments, return values)",
+      "DOM Manipulation (document.getElementById, innerText/textContent, createElement, appendChild, classList)",
+      "Events and Event Handling (addEventListener, click, mouseover, mouseout, submit, event object)",
+      "Conditional Statements (if/else)",
+      "Loops (for, forEach)",
+      "Math.random()",
+      "URL parameters for passing data",
+      "Console debugging and developer tools (ReferenceError, TypeError, console.log, breakpoints)"
+    ],
+    "learning_outcome": [
+      "Confidently write basic JavaScript code with good structure",
+      "Understand and use fundamental JS concepts: variables, data types, operators, strings, loops, arrays, objects, and functions",
+      "Manipulate the DOM to make web pages interactive",
+      "Create reusable functions and handle user events",
+      "Perform basic debugging to find and fix issues in code"
+    ]
+  },
+  {
+    "phase": 4,
+    "title": "Building an AI-Powered Content Generator with Modern JavaScript & Gemini API",
+    "timeline": "14 days",
+    "learning_concept": [
+      "Modern JavaScript ES6+ variables (let, const)",
+      "Arrow Functions (syntax and implicit return)",
+      "Template Literals",
+      "Object and Array Destructuring",
+      "Spread and Rest Operators",
+      "ES6 Array Methods (map, filter, reduce)",
+      "Asynchronous JavaScript (Promises, fetch API)",
+      "Google Gemini API integration",
+      "Client-server request/response cycle"
+    ],
+    "learning_outcome": [
+      "Confidently use modern ES6+ JavaScript syntax for cleaner and more efficient code",
+      "Effectively manipulate and transform data using ES6 array methods",
+      "Understand and implement asynchronous JavaScript using Promises and the fetch() API to work with external services",
+      "Successfully integrate a third-party API (Gemini AI) into a frontend application",
+      "Grasp the fundamentals of the client-server request/response cycle",
+      "Build a functional application that leverages the power of AI"
+    ]
+  },
+  {
+    "phase": 5,
+    "title": "Your First Backend with Node.js, Express & Gemini AI!",
+    "timeline": "15 days",
+    "learning_concept": [
+      "Node.js runtime environment",
+      "Express.js framework (initializing Express app)",
+      "Express Routing (GET and POST requests, app.get(), app.post())",
+      "Request (req) and Response (res) objects (res.json(), res.sendFile())",
+      "npm package manager (npm init -y, npm install express)",
+      "Serving static files (express.static middleware)",
+      "Environment Variables (.env file and dotenv package)",
+      "Request body parsing (express.json() middleware)",
+      "Asynchronous programming with async/await on the backend",
+      "Making HTTP requests from Node.js server using fetch/axios",
+      "CORS (Cross-Origin Resource Sharing) and cors middleware",
+      "URL parameters (req.params)"
+    ],
+    "learning_outcome": [
+      "Build a basic web server using Node.js and Express.js",
+      "Understand the client-server architecture and communication",
+      "Create API routes on the backend to send and receive data",
+      "Connect backend to external APIs like Gemini securely",
+      "Understand asynchronous operations on the backend",
+      "Securely manage sensitive information like API keys using environment variables"
+    ]
+  },
+  {
+    "phase": 6,
+    "title": "Your First Database with MongoDB & Mongoose!",
+    "timeline": "10 days",
+    "learning_concept": [
+      "NoSQL database concepts (MongoDB)",
+      "Mongoose ODM library",
+      "Database connection (mongoose.connect())",
+      "Defining structures with Mongoose Schemas (mongoose.Schema())",
+      "Creating Mongoose Models (mongoose.model())",
+      "Storing documents (new Model().save())",
+      "Retrieving documents (Model.find())",
+      "Updating documents (Model.findByIdAndUpdate())",
+      "Deleting documents (Model.findByIdAndDelete())",
+      "Accessing request parameters (req.params.id)",
+      "Security of database connection strings via .env",
+      "Frontend-backend-database integration"
+    ],
+    "learning_outcome": [
+      "Understand the role of databases in web applications",
+      "Connect a Node.js/Express.js application to a MongoDB database using Mongoose",
+      "Define data structures (schemas) and create models for database collections",
+      "Perform fundamental CRUD (Create, Read, Update, Delete) operations",
+      "Build data-driven applications where content is stored and retrieved from a database",
+      "Securely manage database connection strings and user-generated data persistently"
+    ]
+  },
+  {
+    "phase": 7,
+    "title": "Final Full-Stack Project with AI Integration",
+    "timeline": "45 days",
+    "learning_concept": [
+      "User Authentication and Authorization (JWT and bcrypt)",
+      "Password hashing using bcrypt",
+      "JWT generation and route protection",
+      "Project collaboration data models and member authorization",
+      "Markdown editor integration (e.g., SimpleMDE)",
+      "File Uploads & multipart form data processing using Multer",
+      "File storage and integration with services like Cloudinary",
+      "Basic contribution analytics tracking and aggregation",
+      "Public shareable read-only links",
+      "Full-stack AI endpoints creation (/api/gemini/explain, /api/gemini/docs, /api/gemini/readme)"
+    ],
+    "learning_outcome": [
+      "Design, develop, and deploy a full-stack web application from scratch",
+      "Implement secure user authentication and authorization using JWT and bcrypt",
+      "Manage complex data relationships using MongoDB and Mongoose",
+      "Build robust RESTful APIs with Node.js and Express.js",
+      "Integrate Google Gemini API to add intelligent features like code/note explanation and README generation",
+      "Handle file uploads and storage securely and efficiently",
+      "Implement basic collaboration and visual contribution analytics",
+      "Deploy frontend, backend, and database to production cloud hosting platforms"
+    ]
+  }
+]
