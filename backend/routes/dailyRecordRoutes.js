@@ -1,23 +1,13 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const AppError = require('../utils/AppError');
-const catchAsync = require('../utils/catchAsync');
 const { Student } = require('../models/Student');
-
-const router = express.Router();
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
 
 // ──────────────────────────────────────────────
-// 1. MOUNTED MODEL DEFINITION
+// 1. SCHEMA AND MODEL DEFINITION
 // ──────────────────────────────────────────────
 
-/**
- * Why 'date' is duplicated at both document level and item level:
- * 
- * 1. Document level 'date': Standardizes the document boundary (one document per student per day). 
- *    Enables efficient unique indexing on { email, date } and fast lookups.
- * 2. Item level 'date': Provides redundant storage at the subdocument level. This allows easier 
- *    querying, filtering, and aggregation (e.g., via MongoDB $unwind) later.
- */
 const DailyRecordSchema = new mongoose.Schema(
   {
     studentId: {
@@ -82,50 +72,27 @@ DailyRecord.collection.dropIndex('studentId_1_date_1').catch(() => {
 // 2. DATE NORMALIZATION HELPERS
 // ──────────────────────────────────────────────
 
-/**
- * Normalize a date string (YYYY-MM-DD) to midnight UTC.
- */
-const normalizeDateToUTC = (dateStr) => {
-  const parts = dateStr.split('-');
-  if (parts.length !== 3) {
-    throw new AppError('Invalid date format. Use YYYY-MM-DD.', 400);
-  }
-
-  const year = parseInt(parts[0], 10);
-  const month = parseInt(parts[1], 10) - 1; // JS months are 0-indexed
-  const day = parseInt(parts[2], 10);
-
-  if (isNaN(year) || isNaN(month) || isNaN(day)) {
-    throw new AppError('Invalid date values. Use YYYY-MM-DD.', 400);
-  }
-
-  const d = new Date(Date.UTC(year, month, day, 0, 0, 0, 0));
-
-  if (isNaN(d.getTime())) {
-    throw new AppError('Invalid date. Use YYYY-MM-DD.', 400);
-  }
-
-  return d;
+const normalizeDateToUTC = (dateInput) => {
+  const d = new Date(dateInput);
+  if (isNaN(d.getTime())) return null;
+  return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0));
 };
 
-/**
- * Build the end-of-day boundary for a given date string (23:59:59.999 UTC).
- */
-const endOfDayUTC = (dateStr) => {
-  const d = normalizeDateToUTC(dateStr);
-  d.setUTCHours(23, 59, 59, 999);
-  return d;
+const endOfDayUTC = (dateInput) => {
+  const d = new Date(dateInput);
+  if (isNaN(d.getTime())) return null;
+  return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999));
 };
 
 // ──────────────────────────────────────────────
-// 3. API ENDPOINTS
+// 3. ROUTER INITIALIZATION
 // ──────────────────────────────────────────────
 
-/**
- * POST /
- * Create or update (upsert) a DailyRecord.
- * Accepts { studentId, email, date, goals, reflections, revisions } in the body.
- */
+const router = express.Router();
+
+// ──────────────────────────────────────────────
+// 4. POST / (UPSERT DAILY RECORD)
+// ──────────────────────────────────────────────
 router.post(
   '/',
   catchAsync(async (req, res, next) => {
@@ -169,7 +136,6 @@ router.post(
     }
 
     email = email.toLowerCase().trim();
-    // Normalize date to midnight UTC
     const normalizedDate = normalizeDateToUTC(date);
 
     // Fetch existing document to check for duplicate sub-items by email & date
@@ -182,6 +148,11 @@ router.post(
     if ('goals' in req.body && Array.isArray(req.body.goals)) {
       const existingGoals = existingRecord ? existingRecord.goals : [];
       const filteredGoals = req.body.goals
+        .map(g => ({
+          ...g,
+          goalId: g.goalId || new mongoose.Types.ObjectId().toString(),
+          date: normalizedDate
+        }))
         .filter(incomingGoal => {
           // Skip if goal with same goalId and date already exists
           const isDuplicate = existingGoals.some(
@@ -189,8 +160,7 @@ router.post(
                  (!g.date || g.date.getTime() === normalizedDate.getTime())
           );
           return !isDuplicate;
-        })
-        .map(g => ({ ...g, date: normalizedDate }));
+        });
 
       if (filteredGoals.length > 0) {
         pushObj.goals = { $each: filteredGoals };
@@ -201,6 +171,11 @@ router.post(
     if ('reflections' in req.body && Array.isArray(req.body.reflections)) {
       const existingReflections = existingRecord ? existingRecord.reflections : [];
       const filteredReflections = req.body.reflections
+        .map(r => ({
+          ...r,
+          goalId: r.goalId || new mongoose.Types.ObjectId().toString(),
+          date: normalizedDate
+        }))
         .filter(incomingRefl => {
           // Skip if reflection with same goalId and date already exists
           const isDuplicate = existingReflections.some(
@@ -208,8 +183,7 @@ router.post(
                  (!r.date || r.date.getTime() === normalizedDate.getTime())
           );
           return !isDuplicate;
-        })
-        .map(r => ({ ...r, date: normalizedDate }));
+        });
 
       if (filteredReflections.length > 0) {
         pushObj.reflections = { $each: filteredReflections };
@@ -220,6 +194,11 @@ router.post(
     if ('revisions' in req.body && Array.isArray(req.body.revisions)) {
       const existingRevisions = existingRecord ? existingRecord.revisions : [];
       const filteredRevisions = req.body.revisions
+        .map(rev => ({
+          ...rev,
+          sourceGoalId: rev.sourceGoalId || new mongoose.Types.ObjectId().toString(),
+          date: normalizedDate
+        }))
         .filter(incomingRev => {
           // Skip if revision with same topic, sourceGoalId, and date already exists
           const isDuplicate = existingRevisions.some(
@@ -228,8 +207,7 @@ router.post(
                    (!rev.date || rev.date.getTime() === normalizedDate.getTime())
           );
           return !isDuplicate;
-        })
-        .map(rev => ({ ...rev, date: normalizedDate }));
+        });
 
       if (filteredRevisions.length > 0) {
         pushObj.revisions = { $each: filteredRevisions };
@@ -265,7 +243,6 @@ router.post(
       }
     );
 
-    // Determine status code based on whether document was newly created
     const isNew = record.createdAt.getTime() === record.updatedAt.getTime();
 
     res.status(isNew ? 201 : 200).json({
@@ -278,11 +255,9 @@ router.post(
   })
 );
 
-/**
- * GET /
- * Retrieve DailyRecords matching the filters.
- * Supports: studentId, email, date, startDate, endDate
- */
+// ──────────────────────────────────────────────
+// 5. GET / (RETRIEVE DAILY RECORD(S))
+// ──────────────────────────────────────────────
 router.get(
   '/',
   catchAsync(async (req, res, next) => {
@@ -290,7 +265,6 @@ router.get(
 
     const filter = {};
 
-    // Filter by studentId if provided
     if (studentId) {
       if (!mongoose.Types.ObjectId.isValid(studentId)) {
         return next(new AppError('Invalid studentId format.', 400));
@@ -298,12 +272,10 @@ router.get(
       filter.studentId = studentId;
     }
 
-    // Filter by email if provided
     if (email) {
       filter.email = email.toLowerCase().trim();
     }
 
-    // Filter by date or date range
     if (date) {
       const dayStart = normalizeDateToUTC(date);
       const dayEnd = endOfDayUTC(date);
@@ -325,7 +297,6 @@ router.get(
       filter.date = { $lte: endOfDayUTC(endDate) };
     }
 
-    // Retrieve documents and populate student information
     const records = await DailyRecord.find(filter)
       .populate('studentId', 'fullName email campus batch')
       .sort({ date: -1 })
@@ -336,6 +307,459 @@ router.get(
       message: 'Daily records retrieved successfully.',
       count: records.length,
       data: records,
+    });
+  })
+);
+
+// ──────────────────────────────────────────────
+// 6. PUT ROUTES (FULL ITEM REPLACEMENT)
+// ──────────────────────────────────────────────
+
+/**
+ * PUT /goal
+ * Replace description of a single goal.
+ */
+router.put(
+  '/goal',
+  catchAsync(async (req, res, next) => {
+    let { email, date, goalId, description } = req.body;
+
+    if (!email || !date) {
+      return next(new AppError('email and date are required.', 400));
+    }
+    if (!goalId) {
+      return next(new AppError('goalId is required.', 400));
+    }
+
+    email = email.toLowerCase().trim();
+    const normalizedDate = normalizeDateToUTC(date);
+
+    const record = await DailyRecord.findOneAndUpdate(
+      { email, date: normalizedDate, "goals.goalId": goalId },
+      { $set: { "goals.$[elem].description": description } },
+      {
+        arrayFilters: [{ "elem.goalId": goalId }],
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!record) {
+      return next(new AppError('DailyRecord or matching goal item not found.', 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Goal updated successfully.',
+      data: record,
+    });
+  })
+);
+
+/**
+ * PUT /reflection
+ * Replace fields of a single reflection.
+ */
+router.put(
+  '/reflection',
+  catchAsync(async (req, res, next) => {
+    let { email, date, goalId, assessment, reflectionText } = req.body;
+
+    if (!email || !date) {
+      return next(new AppError('email and date are required.', 400));
+    }
+    if (!goalId) {
+      return next(new AppError('goalId is required.', 400));
+    }
+
+    email = email.toLowerCase().trim();
+    const normalizedDate = normalizeDateToUTC(date);
+
+    const record = await DailyRecord.findOneAndUpdate(
+      { email, date: normalizedDate, "reflections.goalId": goalId },
+      { 
+        $set: { 
+          "reflections.$[elem].assessment": assessment,
+          "reflections.$[elem].reflectionText": reflectionText
+        } 
+      },
+      {
+        arrayFilters: [{ "elem.goalId": goalId }],
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!record) {
+      return next(new AppError('DailyRecord or matching reflection item not found.', 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Reflection updated successfully.',
+      data: record,
+    });
+  })
+);
+
+/**
+ * PUT /revision
+ * Replace fields of a single revision.
+ */
+router.put(
+  '/revision',
+  catchAsync(async (req, res, next) => {
+    let { email, date, topic, sourceGoalId, reason } = req.body;
+
+    if (!email || !date) {
+      return next(new AppError('email and date are required.', 400));
+    }
+    if (!topic || !sourceGoalId) {
+      return next(new AppError('topic and sourceGoalId are required.', 400));
+    }
+
+    email = email.toLowerCase().trim();
+    const normalizedDate = normalizeDateToUTC(date);
+
+    const record = await DailyRecord.findOneAndUpdate(
+      { 
+        email, 
+        date: normalizedDate, 
+        "revisions.topic": topic,
+        "revisions.sourceGoalId": sourceGoalId
+      },
+      { 
+        $set: { 
+          "revisions.$[elem].reason": reason
+        } 
+      },
+      {
+        arrayFilters: [{ "elem.topic": topic, "elem.sourceGoalId": sourceGoalId }],
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!record) {
+      return next(new AppError('DailyRecord or matching revision item not found.', 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Revision updated successfully.',
+      data: record,
+    });
+  })
+);
+
+// ──────────────────────────────────────────────
+// 7. PATCH ROUTES (PARTIAL ITEM UPDATES)
+// ──────────────────────────────────────────────
+
+/**
+ * PATCH /goal
+ * Partially update a single goal's fields.
+ */
+router.patch(
+  '/goal',
+  catchAsync(async (req, res, next) => {
+    let { email, date, goalId, description } = req.body;
+
+    if (!email || !date) {
+      return next(new AppError('email and date are required.', 400));
+    }
+    if (!goalId) {
+      return next(new AppError('goalId is required.', 400));
+    }
+
+    email = email.toLowerCase().trim();
+    const normalizedDate = normalizeDateToUTC(date);
+
+    const updateFields = {};
+    if (description !== undefined) {
+      updateFields["goals.$[elem].description"] = description;
+    }
+
+    if (Object.keys(updateFields).length === 0) {
+      return next(new AppError('At least one field to update must be provided.', 400));
+    }
+
+    const record = await DailyRecord.findOneAndUpdate(
+      { email, date: normalizedDate, "goals.goalId": goalId },
+      { $set: updateFields },
+      {
+        arrayFilters: [{ "elem.goalId": goalId }],
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!record) {
+      return next(new AppError('DailyRecord or matching goal item not found.', 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Goal updated successfully.',
+      data: record,
+    });
+  })
+);
+
+/**
+ * PATCH /reflection
+ * Partially update a single reflection's fields.
+ */
+router.patch(
+  '/reflection',
+  catchAsync(async (req, res, next) => {
+    let { email, date, goalId, assessment, reflectionText } = req.body;
+
+    if (!email || !date) {
+      return next(new AppError('email and date are required.', 400));
+    }
+    if (!goalId) {
+      return next(new AppError('goalId is required.', 400));
+    }
+
+    email = email.toLowerCase().trim();
+    const normalizedDate = normalizeDateToUTC(date);
+
+    const updateFields = {};
+    if (assessment !== undefined) {
+      updateFields["reflections.$[elem].assessment"] = assessment;
+    }
+    if (reflectionText !== undefined) {
+      updateFields["reflections.$[elem].reflectionText"] = reflectionText;
+    }
+
+    if (Object.keys(updateFields).length === 0) {
+      return next(new AppError('At least one field to update must be provided.', 400));
+    }
+
+    const record = await DailyRecord.findOneAndUpdate(
+      { email, date: normalizedDate, "reflections.goalId": goalId },
+      { $set: updateFields },
+      {
+        arrayFilters: [{ "elem.goalId": goalId }],
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!record) {
+      return next(new AppError('DailyRecord or matching reflection item not found.', 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Reflection updated successfully.',
+      data: record,
+    });
+  })
+);
+
+/**
+ * PATCH /revision
+ * Partially update a single revision's fields.
+ */
+router.patch(
+  '/revision',
+  catchAsync(async (req, res, next) => {
+    let { email, date, topic, sourceGoalId, reason } = req.body;
+
+    if (!email || !date) {
+      return next(new AppError('email and date are required.', 400));
+    }
+    if (!topic || !sourceGoalId) {
+      return next(new AppError('topic and sourceGoalId are required.', 400));
+    }
+
+    email = email.toLowerCase().trim();
+    const normalizedDate = normalizeDateToUTC(date);
+
+    const updateFields = {};
+    if (reason !== undefined) {
+      updateFields["revisions.$[elem].reason"] = reason;
+    }
+
+    if (Object.keys(updateFields).length === 0) {
+      return next(new AppError('At least one field to update must be provided.', 400));
+    }
+
+    const record = await DailyRecord.findOneAndUpdate(
+      { 
+        email, 
+        date: normalizedDate, 
+        "revisions.topic": topic, 
+        "revisions.sourceGoalId": sourceGoalId 
+      },
+      { $set: updateFields },
+      {
+        arrayFilters: [{ "elem.topic": topic, "elem.sourceGoalId": sourceGoalId }],
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!record) {
+      return next(new AppError('DailyRecord or matching revision item not found.', 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Revision updated successfully.',
+      data: record,
+    });
+  })
+);
+
+// ──────────────────────────────────────────────
+// 8. DELETE ROUTES
+// ──────────────────────────────────────────────
+
+/**
+ * DELETE /goal
+ * Pull a single goal out of the goals array.
+ */
+router.delete(
+  '/goal',
+  catchAsync(async (req, res, next) => {
+    let { email, date, goalId } = req.body;
+
+    if (!email || !date) {
+      return next(new AppError('email and date are required.', 400));
+    }
+    if (!goalId) {
+      return next(new AppError('goalId is required.', 400));
+    }
+
+    email = email.toLowerCase().trim();
+    const normalizedDate = normalizeDateToUTC(date);
+
+    const record = await DailyRecord.findOneAndUpdate(
+      { email, date: normalizedDate, "goals.goalId": goalId },
+      { $pull: { goals: { goalId } } },
+      { new: true }
+    );
+
+    if (!record) {
+      return next(new AppError('DailyRecord or matching goal item not found.', 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Goal deleted successfully.',
+      data: record,
+    });
+  })
+);
+
+/**
+ * DELETE /reflection
+ * Pull a single reflection out of the reflections array.
+ */
+router.delete(
+  '/reflection',
+  catchAsync(async (req, res, next) => {
+    let { email, date, goalId } = req.body;
+
+    if (!email || !date) {
+      return next(new AppError('email and date are required.', 400));
+    }
+    if (!goalId) {
+      return next(new AppError('goalId is required.', 400));
+    }
+
+    email = email.toLowerCase().trim();
+    const normalizedDate = normalizeDateToUTC(date);
+
+    const record = await DailyRecord.findOneAndUpdate(
+      { email, date: normalizedDate, "reflections.goalId": goalId },
+      { $pull: { reflections: { goalId } } },
+      { new: true }
+    );
+
+    if (!record) {
+      return next(new AppError('DailyRecord or matching reflection item not found.', 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Reflection deleted successfully.',
+      data: record,
+    });
+  })
+);
+
+/**
+ * DELETE /revision
+ * Pull a single revision out of the revisions array.
+ */
+router.delete(
+  '/revision',
+  catchAsync(async (req, res, next) => {
+    let { email, date, topic, sourceGoalId } = req.body;
+
+    if (!email || !date) {
+      return next(new AppError('email and date are required.', 400));
+    }
+    if (!topic || !sourceGoalId) {
+      return next(new AppError('topic and sourceGoalId are required.', 400));
+    }
+
+    email = email.toLowerCase().trim();
+    const normalizedDate = normalizeDateToUTC(date);
+
+    const record = await DailyRecord.findOneAndUpdate(
+      { 
+        email, 
+        date: normalizedDate, 
+        "revisions.topic": topic, 
+        "revisions.sourceGoalId": sourceGoalId 
+      },
+      { $pull: { revisions: { topic, sourceGoalId } } },
+      { new: true }
+    );
+
+    if (!record) {
+      return next(new AppError('DailyRecord or matching revision item not found.', 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Revision deleted successfully.',
+      data: record,
+    });
+  })
+);
+
+/**
+ * DELETE /
+ * Delete the entire DailyRecord for a student on a specific date.
+ */
+router.delete(
+  '/',
+  catchAsync(async (req, res, next) => {
+    let { email, date } = req.body;
+
+    if (!email || !date) {
+      return next(new AppError('email and date are required.', 400));
+    }
+
+    email = email.toLowerCase().trim();
+    const normalizedDate = normalizeDateToUTC(date);
+
+    const record = await DailyRecord.findOneAndDelete({ email, date: normalizedDate });
+
+    if (!record) {
+      return next(new AppError('DailyRecord not found for this student and date.', 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Daily record deleted successfully.',
+      data: record,
     });
   })
 );
