@@ -1,5 +1,5 @@
 const Goal = require('../models/Goal');
-const { Student } = require('../models/Student');
+const User = require('../models/userModel');
 const Phase = require('../models/Phase');
 const mongoose = require('mongoose');
 const AppError = require('../utils/appError');
@@ -32,14 +32,14 @@ class GoalService {
 
     // 1. Validate studentId existence
     if (!data.studentId) {
-      throw new AppError('Goal must be associated with a Student.', 400);
+      throw new AppError('Goal must be associated with a User.', 400);
     }
     if (!mongoose.Types.ObjectId.isValid(data.studentId)) {
       throw new AppError('Invalid student ID format.', 400);
     }
-    const studentExists = await Student.exists({ _id: data.studentId });
+    const studentExists = await User.exists({ _id: data.studentId });
     if (!studentExists) {
-      throw new AppError('Student with the provided ID does not exist.', 400);
+      throw new AppError('User with the provided ID does not exist.', 400);
     }
 
     // 2. Validate phaseId existence
@@ -59,7 +59,7 @@ class GoalService {
 
     // 4. Return populated Goal
     return await Goal.findById(goal._id)
-      .populate('studentId', 'fullName email')
+      .populate('studentId', 'name email')
       .populate('phaseId', 'title phaseNumber');
   }
 
@@ -70,7 +70,7 @@ class GoalService {
    */
   async getAllGoals() {
     return await Goal.find()
-      .populate('studentId', 'fullName email')
+      .populate('studentId', 'name email')
       .populate('phaseId', 'title phaseNumber')
       .sort({ createdAt: -1 });
   }
@@ -86,7 +86,7 @@ class GoalService {
     }
 
     const goal = await Goal.findById(id)
-      .populate('studentId', 'fullName email')
+      .populate('studentId', 'name email')
       .populate('phaseId', 'title phaseNumber');
 
     if (!goal) {
@@ -113,9 +113,9 @@ class GoalService {
       if (!mongoose.Types.ObjectId.isValid(data.studentId)) {
         throw new AppError('Invalid student ID format.', 400);
       }
-      const studentExists = await Student.exists({ _id: data.studentId });
+      const studentExists = await User.exists({ _id: data.studentId });
       if (!studentExists) {
-        throw new AppError('Student with the provided ID does not exist.', 400);
+        throw new AppError('User with the provided ID does not exist.', 400);
       }
     }
 
@@ -134,7 +134,7 @@ class GoalService {
       new: true,
       runValidators: true,
     })
-      .populate('studentId', 'fullName email')
+      .populate('studentId', 'name email')
       .populate('phaseId', 'title phaseNumber');
 
     if (!goal) {

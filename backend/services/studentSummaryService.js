@@ -2,8 +2,8 @@ const mongoose = require('mongoose');
 const Goal = require('../models/Goal');
 const Progress = require('../models/Progress');
 const Reflection = require('../models/Reflection');
-const { Student } = require('../models/Student');
-const AppError = require('../utils/AppError');
+const User = require('../models/userModel');
+const AppError = require('../utils/appError');
 
 /**
  * Validate if a string is a valid MongoDB ObjectId
@@ -141,7 +141,7 @@ exports.getDailySummaryByEmail = async (email, startDateStr, endDateStr, dateStr
   }
 
   // Find the student by email (case-insensitive)
-  const student = await Student.findOne({ email: email.trim().toLowerCase() }).lean();
+  const student = await User.findOne({ email: email.trim().toLowerCase() }).lean();
   if (!student) {
     throw new AppError(`No student found with email: ${email}`, 404);
   }

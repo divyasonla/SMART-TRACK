@@ -1,6 +1,6 @@
 const Progress = require('../models/Progress');
 const Goal = require('../models/Goal');
-const { Student } = require('../models/Student');
+const User = require('../models/userModel');
 const mongoose = require('mongoose');
 const AppError = require('../utils/appError');
 
@@ -32,14 +32,14 @@ class ProgressService {
 
     // 1. Validate studentId existence
     if (!data.studentId) {
-      throw new AppError('Progress must be linked to a Student.', 400);
+      throw new AppError('Progress must be linked to a User.', 400);
     }
     if (!mongoose.Types.ObjectId.isValid(data.studentId)) {
       throw new AppError('Invalid student ID format.', 400);
     }
-    const studentExists = await Student.exists({ _id: data.studentId });
+    const studentExists = await User.exists({ _id: data.studentId });
     if (!studentExists) {
-      throw new AppError('Student with the provided ID does not exist.', 400);
+      throw new AppError('User with the provided ID does not exist.', 400);
     }
 
     // 2. Validate goalId existence
@@ -65,7 +65,7 @@ class ProgressService {
 
     // 5. Return populated Progress
     return await Progress.findById(progress._id)
-      .populate('studentId', 'fullName email')
+      .populate('studentId', 'name email')
       .populate('goalId', 'title status');
   }
 
@@ -76,7 +76,7 @@ class ProgressService {
    */
   async getAllProgress() {
     return await Progress.find()
-      .populate('studentId', 'fullName email')
+      .populate('studentId', 'name email')
       .populate('goalId', 'title status')
       .sort({ createdAt: -1 });
   }
@@ -92,7 +92,7 @@ class ProgressService {
     }
 
     const progress = await Progress.findById(id)
-      .populate('studentId', 'fullName email')
+      .populate('studentId', 'name email')
       .populate('goalId', 'title status');
 
     if (!progress) {
@@ -119,9 +119,9 @@ class ProgressService {
       if (!mongoose.Types.ObjectId.isValid(data.studentId)) {
         throw new AppError('Invalid student ID format.', 400);
       }
-      const studentExists = await Student.exists({ _id: data.studentId });
+      const studentExists = await User.exists({ _id: data.studentId });
       if (!studentExists) {
-        throw new AppError('Student with the provided ID does not exist.', 400);
+        throw new AppError('User with the provided ID does not exist.', 400);
       }
     }
 
@@ -140,7 +140,7 @@ class ProgressService {
       new: true,
       runValidators: true,
     })
-      .populate('studentId', 'fullName email')
+      .populate('studentId', 'name email')
       .populate('goalId', 'title status');
 
     if (!progress) {

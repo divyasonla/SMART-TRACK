@@ -6,11 +6,11 @@ const mongoose = require('mongoose');
  */
 const reflectionSchema = new mongoose.Schema(
   {
-    // Reference to the Student who wrote the reflection
+    // Reference to the User who wrote the reflection
     studentId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Student',
-      required: [true, 'Reflection must be associated with a Student.'],
+      ref: 'User',
+      required: [true, 'Reflection must be associated with a User.'],
     },
     // Reference to the Goal this reflection is based on
     goalId: {

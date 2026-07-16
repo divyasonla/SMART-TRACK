@@ -6,11 +6,11 @@ const mongoose = require('mongoose');
  */
 const goalSchema = new mongoose.Schema(
   {
-    // Reference to the Student who created this goal
+    // Reference to the User who created this goal
     studentId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Student',
-      required: [true, 'Goal must be associated with a Student.'],
+      ref: 'User',
+      required: [true, 'Goal must be associated with a User.'],
     },
     // Reference to the curriculum Phase that this goal corresponds to
     phaseId: {

@@ -1,4 +1,4 @@
-const { Student } = require('../models/Student');
+const User = require('../models/userModel');
 const mongoose = require('mongoose');
 const AppError = require('../utils/appError');
 
@@ -13,7 +13,7 @@ class StudentService {
    * @returns {Promise<Object>} - The created student document
    */
   async createStudent(data) {
-    return await Student.create(data);
+    return await User.create(data);
   }
 
   /**
@@ -22,7 +22,7 @@ class StudentService {
    * @returns {Promise<Array>} - List of student documents
    */
   async getAllStudents() {
-    return await Student.find().populate('currentPhase').sort({ createdAt: -1 });
+    return await User.find().sort({ createdAt: -1 });
   }
 
   /**
@@ -36,7 +36,7 @@ class StudentService {
       throw new AppError('Invalid Student ID format.', 400);
     }
 
-    const student = await Student.findById(id).populate('currentPhase');
+    const student = await User.findById(id);
     if (!student) {
       throw new AppError(`Student with ID ${id} not found.`, 404);
     }
@@ -54,10 +54,10 @@ class StudentService {
       throw new AppError('Invalid Student ID format.', 400);
     }
 
-    const student = await Student.findByIdAndUpdate(id, data, {
+    const student = await User.findByIdAndUpdate(id, data, {
       new: true,
       runValidators: true,
-    }).populate('currentPhase');
+    });
 
     if (!student) {
       throw new AppError(`Student with ID ${id} not found.`, 404);
@@ -75,7 +75,7 @@ class StudentService {
       throw new AppError('Invalid Student ID format.', 400);
     }
 
-    const student = await Student.findByIdAndDelete(id);
+    const student = await User.findByIdAndDelete(id);
     if (!student) {
       throw new AppError(`Student with ID ${id} not found.`, 404);
     }

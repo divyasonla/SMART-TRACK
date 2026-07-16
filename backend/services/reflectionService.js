@@ -1,6 +1,6 @@
 const Reflection = require('../models/Reflection');
 const Goal = require('../models/Goal');
-const { Student } = require('../models/Student');
+const User = require('../models/userModel');
 const mongoose = require('mongoose');
 const AppError = require('../utils/appError');
 
@@ -32,14 +32,14 @@ class ReflectionService {
 
     // 1. Validate studentId existence
     if (!data.studentId) {
-      throw new AppError('Reflection must be associated with a Student.', 400);
+      throw new AppError('Reflection must be associated with a User.', 400);
     }
     if (!mongoose.Types.ObjectId.isValid(data.studentId)) {
       throw new AppError('Invalid student ID format.', 400);
     }
-    const studentExists = await Student.exists({ _id: data.studentId });
+    const studentExists = await User.exists({ _id: data.studentId });
     if (!studentExists) {
-      throw new AppError('Student with the provided ID does not exist.', 400);
+      throw new AppError('User with the provided ID does not exist.', 400);
     }
 
     // 2. Validate goalId existence
@@ -59,7 +59,7 @@ class ReflectionService {
 
     // 4. Return populated Reflection
     return await Reflection.findById(reflection._id)
-      .populate('studentId', 'fullName email')
+      .populate('studentId', 'name email')
       .populate('goalId', 'title status');
   }
 
@@ -70,7 +70,7 @@ class ReflectionService {
    */
   async getAllReflections() {
     return await Reflection.find()
-      .populate('studentId', 'fullName email')
+      .populate('studentId', 'name email')
       .populate('goalId', 'title status')
       .sort({ date: -1 });
   }
@@ -86,7 +86,7 @@ class ReflectionService {
     }
 
     const reflection = await Reflection.findById(id)
-      .populate('studentId', 'fullName email')
+      .populate('studentId', 'name email')
       .populate('goalId', 'title status');
 
     if (!reflection) {
@@ -113,9 +113,9 @@ class ReflectionService {
       if (!mongoose.Types.ObjectId.isValid(data.studentId)) {
         throw new AppError('Invalid student ID format.', 400);
       }
-      const studentExists = await Student.exists({ _id: data.studentId });
+      const studentExists = await User.exists({ _id: data.studentId });
       if (!studentExists) {
-        throw new AppError('Student with the provided ID does not exist.', 400);
+        throw new AppError('User with the provided ID does not exist.', 400);
       }
     }
 
@@ -134,7 +134,7 @@ class ReflectionService {
       new: true,
       runValidators: true,
     })
-      .populate('studentId', 'fullName email')
+      .populate('studentId', 'name email')
       .populate('goalId', 'title status');
 
     if (!reflection) {

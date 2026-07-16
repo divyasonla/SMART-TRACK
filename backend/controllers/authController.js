@@ -2,7 +2,6 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const validator = require('validator');
 const User = require('../models/userModel');
-const { Student } = require('../models/Student');
 const nodemailer = require('nodemailer');
 
 // Helper to generate JWT
@@ -49,21 +48,6 @@ exports.register = async (req, res) => {
       campus,
       gender,
     });
-
-    // Create corresponding Student profile (rollback user if it fails)
-    try {
-      await Student.create({
-        userId: user._id,
-        fullName: name,
-        email,
-        campus,
-        batch: batch || '2026-Cohort-A',
-      });
-    } catch (studentErr) {
-      // Rollback user creation to maintain consistency
-      await User.findByIdAndDelete(user._id);
-      throw studentErr;
-    }
 
     // Generate JWT token for the newly registered user
     const token = generateToken(user._id);

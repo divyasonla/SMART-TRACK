@@ -6,11 +6,11 @@ const mongoose = require('mongoose');
  */
 const progressSchema = new mongoose.Schema(
   {
-    // Reference to the Student who owns this progress record
+    // Reference to the User who owns this progress record
     studentId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Student',
-      required: [true, 'Progress must be linked to a Student.'],
+      ref: 'User',
+      required: [true, 'Progress must be linked to a User.'],
     },
     // Reference to the Goal this progress applies to
     goalId: {

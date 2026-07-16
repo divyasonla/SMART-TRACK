@@ -1,6 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const { Student } = require('../models/Student');
+const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 
@@ -12,7 +12,7 @@ const DailyRecordSchema = new mongoose.Schema(
   {
     studentId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Student',
+      ref: 'User',
       required: false, // studentId is now optional
     },
     email: {
@@ -111,7 +111,7 @@ router.post(
     // Try to resolve studentId if only email is provided (non-blocking lookup)
     if (email && !studentId) {
       email = email.toLowerCase().trim();
-      const student = await Student.findOne({ email });
+      const student = await User.findOne({ email });
       if (student) {
         studentId = student._id;
       }
@@ -122,11 +122,11 @@ router.post(
       if (!mongoose.Types.ObjectId.isValid(studentId)) {
         return next(new AppError('Invalid studentId format.', 400));
       }
-      const student = await Student.findById(studentId);
+      const student = await User.findById(studentId);
       if (student) {
         email = student.email;
       } else {
-        return next(new AppError('Student with the provided ID does not exist.', 404));
+        return next(new AppError('User with the provided ID does not exist.', 404));
       }
     }
 
@@ -298,7 +298,7 @@ router.get(
     }
 
     const records = await DailyRecord.find(filter)
-      .populate('studentId', 'fullName email campus batch')
+      .populate('studentId', 'name email campus')
       .sort({ date: -1 })
       .lean();
 
