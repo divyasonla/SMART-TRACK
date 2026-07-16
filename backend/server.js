@@ -31,6 +31,7 @@ const errorHandler = require('./middleware/errorHandler');
 const studentSummaryRoutes = require('./routes/studentSummaryRoutes');
 // NEW: add dailyRecord route (DailyRecord model + handlers live in Student.js)
 const dailyRecordRoutes = require('./routes/dailyRecordRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 // Initialize the Express application
 const app = express();
@@ -72,9 +73,8 @@ app.get('/', (req, res) => {
 });
 
 // Mounted API routes
-app.use('/api/v1/tasks', taskRoutes);
 app.use('/api/curriculum', curriculumRoutes);
-
+app.use('/api/auth', authRoutes);
 // Mount student summary BEFORE generic student routes to avoid wildcard conflicts
 app.use('/api/students', studentSummaryRoutes);
 app.use('/api/students', studentRoutes);
