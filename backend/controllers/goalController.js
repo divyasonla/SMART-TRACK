@@ -2,118 +2,72 @@ const goalService = require('../services/goalService');
 const catchAsync = require('../utils/catchAsync');
 
 /**
- * Controller to handle goal creation.
- * Responds with 201 Created and the created Goal document.
+ * Goal Controller
+ * Handles HTTP requests and delegates to the service layer.
  */
-const createGoal = catchAsync(async (req, res, next) => {
-  // Extract parameters to prevent body injection
-  const {
-    title,
-    description,
-    expectedCompletionTime,
-    deadline,
-    priority,
-    status,
-  } = req.body;
 
-  const goal = await goalService.createGoal(req.user.id, {
-    title,
-    description,
-    expectedCompletionTime: Number(expectedCompletionTime),
-    deadline,
-    priority,
-    status,
-  });
+// POST /api/goals
+// exports.createGoal = catchAsync(async (req, res, next) => {
+//   const goal = await goalService.createGoal(req.body);
 
-  res.status(201).json({
-    status: 'success',
-    message: 'Goal created successfully',
-    data: {
-      goal,
-    },
+//   res.status(201).json({
+//     success: true,
+//     message: 'Goal created successfully',
+//     data: goal,
+//   });
+// });
+
+// GET /api/goals
+exports.getAllGoals = catchAsync(async (req, res, next) => {
+  const goals = await goalService.getAllGoals();
+
+  res.status(200).json({
+    success: true,
+    message: 'Goals retrieved successfully',
+    data: goals,
   });
 });
 
-/**
- * Controller to fetch all goals for the logged-in user.
- * Responds with 200 OK and an array of goals.
- */
-const getMyGoals = catchAsync(async (req, res, next) => {
-  const goals = await goalService.getUserGoals(req.user.id);
+// GET /api/goals/:id
+exports.getGoalById = catchAsync(async (req, res, next) => {
+  const goal = await goalService.getGoalById(req.params.id);
 
   res.status(200).json({
-    status: 'success',
-    results: goals.length,
-    data: {
-      goals,
-    },
+    success: true,
+    message: 'Goal retrieved successfully',
+    data: goal,
   });
 });
 
-/**
- * Controller to fetch a specific goal.
- * Responds with 200 OK and the Goal document.
- */
-const getGoal = catchAsync(async (req, res, next) => {
-  const goal = await goalService.getGoal(req.params.id, req.user.id);
+// PUT /api/goals/:id
+exports.updateGoal = catchAsync(async (req, res, next) => {
+  const goal = await goalService.updateGoal(req.params.id, req.body);
 
   res.status(200).json({
-    status: 'success',
-    data: {
-      goal,
-    },
-  });
-});
-
-/**
- * Controller to update a specific goal.
- * Responds with 200 OK and the updated Goal document.
- */
-const updateGoal = catchAsync(async (req, res, next) => {
-  const {
-    title,
-    description,
-    expectedCompletionTime,
-    deadline,
-    priority,
-    status,
-  } = req.body;
-
-  const updatedGoal = await goalService.updateGoal(req.params.id, req.user.id, {
-    title,
-    description,
-    expectedCompletionTime: expectedCompletionTime ? Number(expectedCompletionTime) : undefined,
-    deadline,
-    priority,
-    status,
-  });
-
-  res.status(200).json({
-    status: 'success',
+    success: true,
     message: 'Goal updated successfully',
-    data: {
-      goal: updatedGoal,
-    },
+    data: goal,
   });
 });
 
-/**
- * Controller to delete a specific goal.
- * Responds with 200 OK.
- */
-const deleteGoal = catchAsync(async (req, res, next) => {
-  await goalService.deleteGoal(req.params.id, req.user.id);
+// DELETE /api/goals/:id
+exports.deleteGoal = catchAsync(async (req, res, next) => {
+  await goalService.deleteGoal(req.params.id);
 
   res.status(200).json({
-    status: 'success',
+    success: true,
     message: 'Goal deleted successfully',
+    data: null,
   });
 });
 
-module.exports = {
-  createGoal,
-  getMyGoals,
-  getGoal,
-  updateGoal,
-  deleteGoal,
-};
+
+exports.createGoal = catchAsync(async (req, res, next) => {
+  console.log('REQUEST BODY:', req.body); // temporary debug line
+  const goal = await goalService.createGoal(req.body);
+  res.status(201).json({
+    success: true,
+    message: 'Goal created successfully',
+    data: goal,
+  });
+});
