@@ -44,7 +44,11 @@ connectDB();
 app.use(helmet());
 
 // Enable Cross-Origin Resource Sharing
-app.use(cors());
+
+app.use(cors({
+  origin: '*'
+}));
+
 
 // HTTP Request logging (Morgan) - only in development for clean production logs
 if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
