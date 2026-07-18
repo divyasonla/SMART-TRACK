@@ -1,18 +1,14 @@
-const express = require('express');
-const authController = require('../controllers/authController');
-const { validateRegister, validateLogin } = require('../middleware/validationMiddleware');
-const { protect, restrictTo } = require('../middleware/authMiddleware');
-
+const express = require("express");
 const router = express.Router();
 
-// Public routes for user registration and authentication
-router.post('/register', validateRegister, authController.register);
-router.post('/login', validateLogin, authController.login);
+const authController = require("../controllers/authController");
+router.post("/register", authController.register);
 
-// Protected routes (require valid JWT)
-router.get('/me', protect, authController.getProfile);
+router.post("/login", authController.login);
 
-// Admin-only test route
-router.get('/admin-test', protect, restrictTo('Admin'), authController.adminTest);
+router.post("/forgot-password", authController.forgotPassword);
+
+router.post("/reset-password/:token", authController.resetPassword);
+router.post("/reset-password", authController.resetPassword);
 
 module.exports = router;

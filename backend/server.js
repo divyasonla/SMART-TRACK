@@ -19,6 +19,7 @@ const path = require('path');
 const connectDB = require('./config/db');
 const taskRoutes = require('./routes/taskRoutes');
 const authRoutes = require('./routes/authRoutes');
+const userProgressRoutes = require('./routes/userProgressRoutes');
 // const goalRoutes = require('./routes/goalRoutes');
 const notFound = require('./middleware/notFound');
 const errorHandler = require('./middleware/errorHandler');
@@ -65,6 +66,7 @@ app.get('/', (req, res) => {
 // Mounted API routes
 app.use('/api/v1/tasks', taskRoutes);
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/phases', userProgressRoutes);
 // app.use('/api/v1/goals', goalRoutes);
 
 // --- 6. Error Handling Middlewares ---
