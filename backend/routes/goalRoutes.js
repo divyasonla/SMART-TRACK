@@ -1,24 +1,19 @@
 const express = require('express');
 const goalController = require('../controllers/goalController');
-const { validateGoal } = require('../middleware/validationMiddleware');
-const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// Enforce authentication for all goal-related requests
-router.use(protect);
-
-// Root path routes: /api/v1/goals
+// Route group for /api/goals
 router
   .route('/')
-  .get(goalController.getMyGoals)
-  .post(validateGoal, goalController.createGoal);
+  .get(goalController.getAllGoals)
+  .post(goalController.createGoal);
 
-// Parameterized path routes: /api/v1/goals/:id
+// Route group for /api/goals/:id
 router
   .route('/:id')
-  .get(goalController.getGoal)
-  .patch(validateGoal, goalController.updateGoal)
+  .get(goalController.getGoalById)
+  .put(goalController.updateGoal)
   .delete(goalController.deleteGoal);
 
 module.exports = router;

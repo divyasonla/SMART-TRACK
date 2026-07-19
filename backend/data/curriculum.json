@@ -1,0 +1,392 @@
+{
+  "curriculum": {
+    "id": "navgurukul-web-ai-v2",
+    "title": "From Basics to Intelligence",
+    "version": "2.0",
+
+    "vision": "Build learners who can understand anything, solve difficult problems, think critically, collaborate effectively, and become industry-ready software engineers using AI responsibly.",
+
+    "goal": "Students become placement-ready by developing learning ability, logical reasoning, technical expertise, communication skills, and project-building experience.",
+
+    "coreLearningOutcomes": [
+      "Learn independently",
+      "Think critically",
+      "Solve real-world problems",
+      "Use AI effectively",
+      "Build production-ready applications",
+      "Communicate technical ideas",
+      "Collaborate with teams",
+      "Become placement-ready"
+    ],
+
+    "pedagogy": {
+      "principles": [
+        {
+          "title": "Learn by Doing",
+          "description": "Understand concepts while building projects."
+        },
+        {
+          "title": "Feynman Technique",
+          "description": "Teach others and explain concepts to deepen understanding."
+        },
+        {
+          "title": "AI as Learning Partner",
+          "description": "Use AI for guidance while learning to reason independently."
+        },
+        {
+          "title": "Eat the Frog",
+          "description": "Start every day with the hardest problem."
+        },
+        {
+          "title": "Weekly Competitions",
+          "description": "Improve through peer learning and healthy competition."
+        }
+      ]
+    },
+
+    "milestones": [
+      {
+        "title": "Full Stack Development using AI",
+        "duration": "6-8 Months"
+      },
+      {
+        "title": "AI Lab Internship",
+        "duration": "6 Months"
+      },
+      {
+        "title": "Industry Internship",
+        "duration": "3 Months"
+      },
+      {
+        "title": "Placement Preparation",
+        "duration": "3 Months"
+      }
+    ],
+
+    "phases": [
+      {
+        "id": "phase-0",
+        "title": "Induction",
+
+        "durationDays": 30,
+
+        "difficulty": "Beginner",
+
+        "learningObjectives": [
+          "Develop a growth mindset",
+          "Understand how learning works",
+          "Learn peer learning methodology",
+          "Build confidence to learn independently",
+          "Practice daily planning",
+          "Understand AI as a learning partner",
+          "Improve communication",
+          "Develop self-discipline"
+        ],
+
+        "thinkingSkills": [
+          "Growth mindset",
+          "Reflection",
+          "Self-awareness",
+          "Planning",
+          "Curiosity"
+        ],
+
+        "concepts": [
+          "Learning by Doing",
+          "Feynman Technique",
+          "Goal Setting",
+          "AI Prompting",
+          "Daily Planning",
+          "Peer Learning"
+        ],
+
+        "project": null,
+
+        "assessment": [
+          "Daily planning review",
+          "Peer explanation",
+          "Reflection journal"
+        ],
+
+        "reflectionQuestions": [
+          "What did I learn today?",
+          "What confused me?",
+          "How did AI help me?",
+          "What will I improve tomorrow?"
+        ]
+      },
+
+      {
+        "id": "phase-1",
+
+        "title": "Student Profile & Course Portal",
+
+        "durationDays": 5,
+
+        "learningObjectives": [
+          "Understand webpage structure",
+          "Write semantic HTML",
+          "Create accessible webpages",
+          "Organize information clearly",
+          "Understand how browsers render HTML"
+        ],
+
+        "technicalSkills": [
+          "HTML",
+          "VS Code",
+          "GitHub",
+          "Copilot"
+        ],
+
+        "thinkingSkills": [
+          "Problem decomposition",
+          "Attention to detail",
+          "Documentation reading"
+        ],
+
+        "concepts": [
+          "HTML Structure",
+          "Head",
+          "Body",
+          "Forms",
+          "Tables",
+          "Lists",
+          "Semantic Tags",
+          "Accessibility"
+        ],
+
+        "project": {
+          "title": "Student Profile & Course Portal",
+          "deliverables": [
+            "Homepage",
+            "Registration Form",
+            "Student Profile",
+            "Course Table"
+          ]
+        },
+
+        "assessment": {
+          "projectPresentation": true,
+          "YouTubeExplanation": true,
+          "CodeReview": true
+        },
+
+        "reflectionQuestions": [
+          "Why is semantic HTML important?",
+          "Which HTML tag was most useful?",
+          "How can I improve my project?"
+        ]
+      },
+
+      {
+        "id": "phase-2",
+
+        "title": "CSS & Responsive Design",
+
+        "learningObjectives": [
+          "Understand CSS styling",
+          "Create responsive layouts",
+          "Build attractive UI",
+          "Learn design thinking",
+          "Improve user experience"
+        ],
+
+        "technicalSkills": [
+          "CSS",
+          "Flexbox",
+          "Grid",
+          "Media Queries"
+        ],
+
+        "thinkingSkills": [
+          "Visual thinking",
+          "Layout planning",
+          "Debugging"
+        ],
+
+        "concepts": [
+          "Selectors",
+          "Box Model",
+          "Flexbox",
+          "Grid",
+          "Responsive Design",
+          "Animations"
+        ],
+
+        "project": {
+          "title": "Responsive Student Profile"
+        }
+      },
+
+      {
+        "id": "phase-3",
+
+        "title": "JavaScript & DOM",
+
+        "learningObjectives": [
+          "Think logically",
+          "Write reusable code",
+          "Manipulate webpages dynamically",
+          "Solve programming problems",
+          "Understand event-driven programming"
+        ],
+
+        "technicalSkills": [
+          "JavaScript",
+          "DOM",
+          "Events"
+        ],
+
+        "thinkingSkills": [
+          "Logical reasoning",
+          "Algorithmic thinking",
+          "Debugging",
+          "Problem solving"
+        ],
+
+        "project": {
+          "title": "Quiz Application"
+        }
+      },
+
+      {
+        "id": "phase-4",
+
+        "title": "AI Powered Content Generator",
+
+        "learningObjectives": [
+          "Understand API integration",
+          "Write effective prompts",
+          "Evaluate AI responses",
+          "Handle asynchronous programming",
+          "Build AI-powered applications"
+        ],
+
+        "technicalSkills": [
+          "JavaScript ES6",
+          "Fetch API",
+          "Gemini API"
+        ],
+
+        "thinkingSkills": [
+          "Prompt engineering",
+          "Critical evaluation",
+          "Testing",
+          "Debugging"
+        ]
+      },
+
+      {
+        "id": "phase-5",
+
+        "title": "Backend Development",
+
+        "learningObjectives": [
+          "Understand client-server architecture",
+          "Build REST APIs",
+          "Organize backend applications",
+          "Handle requests and responses",
+          "Secure API endpoints"
+        ],
+
+        "technicalSkills": [
+          "Node.js",
+          "Express.js",
+          "REST APIs",
+          "Environment Variables",
+          "Middleware"
+        ],
+
+        "thinkingSkills": [
+          "System thinking",
+          "API design",
+          "Backend debugging"
+        ]
+      },
+
+      {
+        "id": "phase-6",
+
+        "title": "Database Management",
+
+        "learningObjectives": [
+          "Understand databases",
+          "Design schemas",
+          "Store and retrieve data",
+          "Connect backend with database",
+          "Perform CRUD operations"
+        ],
+
+        "technicalSkills": [
+          "MongoDB",
+          "Mongoose"
+        ],
+
+        "thinkingSkills": [
+          "Data modeling",
+          "Database design"
+        ]
+      },
+
+      {
+        "id": "phase-7",
+
+        "title": "React Bootcamp",
+
+        "learningObjectives": [
+          "Build reusable UI components",
+          "Manage application state",
+          "Create single-page applications",
+          "Integrate APIs",
+          "Optimize user experience"
+        ],
+
+        "technicalSkills": [
+          "React",
+          "Hooks",
+          "React Router",
+          "State Management"
+        ],
+
+        "thinkingSkills": [
+          "Component thinking",
+          "State management",
+          "Frontend architecture"
+        ]
+      },
+
+      {
+        "id": "phase-8",
+
+        "title": "Final Capstone Project",
+
+        "learningObjectives": [
+          "Solve a real-world problem",
+          "Work like a software engineer",
+          "Plan project execution",
+          "Deploy production-ready applications",
+          "Present technical work professionally"
+        ],
+
+        "thinkingSkills": [
+          "Product thinking",
+          "Project planning",
+          "Communication",
+          "Collaboration",
+          "Leadership"
+        ],
+
+        "project": {
+          "title": "Open-ended Capstone Project",
+          "deliverables": [
+            "Project Proposal",
+            "MVP",
+            "Deployment",
+            "Documentation",
+            "Presentation"
+          ]
+        }
+      }
+    ]
+  }
+}

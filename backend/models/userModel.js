@@ -10,6 +10,10 @@ const userSchema = new mongoose.Schema(
     name: {
       type: String,
       trim: true,
+      required: [true, "Please provide your name"],
+      trim: true,
+      minlength: [2, "Name must be at least 2 characters"],
+      maxlength: [50, "Name cannot exceed 50 characters"],
     },
 
     email: {
@@ -18,22 +22,29 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
+      match: [
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        "Please provide a valid email address",
+      ],
     },
 
     password: {
       type: String,
       required: [true, "Please provide a password"],
+      minlength: [8, "Password must be at least 8 characters long"],
       select: false,
     },
 
     campus: {
       type: String,
+      required: [true, "Please select your campus"],
       enum: ["Dantewada", "Sarjapur", "Kishanganj", "Raigarh"],
       trim: true,
     },
 
     gender: {
       type: String,
+      required: [true, "Please select your gender"],
       enum: ["Male", "Female"],
     },
 
@@ -53,6 +64,9 @@ const userSchema = new mongoose.Schema(
     },
 
     otpExpiry: {
+    },
+
+    resetPasswordExpire: {
       type: Date,
       default: null,
     },
@@ -67,6 +81,9 @@ const userSchema = new mongoose.Schema(
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
   if (this.password && this.password.startsWith("$2")) return;
+// Hash Password
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
 
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);

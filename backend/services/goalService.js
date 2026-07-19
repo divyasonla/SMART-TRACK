@@ -1,12 +1,16 @@
-const goalRepository = require('../repositories/goalRepository');
+const Goal = require('../models/Goal');
+const User = require('../models/userModel');
+const Phase = require('../models/Phase');
+const mongoose = require('mongoose');
 const AppError = require('../utils/appError');
 
+/**
+ * Service layer for Goal CRUD operations.
+ * All database logic lives here — controllers stay thin.
+ */
 class GoalService {
   /**
-   * Business logic to create a new goal.
-   * @param {string} userId - Owner of the goal
-   * @param {Object} goalData - Fields describing the goal
-   * @returns {Promise<Object>} The saved goal document
+   * Normalize input fields to support both formats (e.g., student/studentId, phase/phaseId)
    */
   async createGoal(userId, goalData) {
     // Determine the current active phase for the user and associate it with the new goal
@@ -45,58 +49,152 @@ class GoalService {
     };
 
     return await goalRepository.createGoal(completeGoalData);
+  _normalizeData(data) {
+    if (data.student && !data.studentId) {
+      data.studentId = data.student;
+    }
+    if (data.phase && !data.phaseId) {
+      data.phaseId = data.phase;
+    }
+    return data;
   }
 
   /**
-   * Business logic to get all goals for a user.
-   * @param {string} userId - User ID
-   * @returns {Promise<Array>} List of goal documents
+   * Create a new goal for a student.
+   * @param {Object} data - Goal fields from request body
+   * @returns {Promise<Object>} - The created goal document
    */
-  async getUserGoals(userId) {
-    return await goalRepository.findGoalsByUser(userId);
+  async createGoal(data) {
+    data = this._normalizeData(data);
+
+    // 1. Validate studentId existence
+    if (!data.studentId) {
+      throw new AppError('Goal must be associated with a User.', 400);
+    }
+    if (!mongoose.Types.ObjectId.isValid(data.studentId)) {
+      throw new AppError('Invalid student ID format.', 400);
+    }
+    const studentExists = await User.exists({ _id: data.studentId });
+    if (!studentExists) {
+      throw new AppError('User with the provided ID does not exist.', 400);
+    }
+
+    // 2. Validate phaseId existence
+    if (!data.phaseId) {
+      throw new AppError('Goal must be linked to a Phase.', 400);
+    }
+    if (!mongoose.Types.ObjectId.isValid(data.phaseId)) {
+      throw new AppError('Invalid phase ID format.', 400);
+    }
+    const phaseExists = await Phase.exists({ _id: data.phaseId });
+    if (!phaseExists) {
+      throw new AppError('Phase with the provided ID does not exist.', 400);
+    }
+
+    // 3. Create Goal
+    const goal = await Goal.create(data);
+
+    // 4. Return populated Goal
+    return await Goal.findById(goal._id)
+      .populate('studentId', 'name email')
+      .populate('phaseId', 'title phaseNumber');
   }
 
   /**
-   * Business logic to get a specific goal.
-   * @param {string} goalId - Unique ID of the goal
-   * @param {string} userId - Owner of the goal
-   * @returns {Promise<Object>} Goal document
+   * Retrieve all goals, sorted by newest first.
+   * Populates studentId and phaseId references.
+   * @returns {Promise<Array>} - List of goal documents
    */
-  async getGoal(goalId, userId) {
-    const goal = await goalRepository.findGoalByIdAndUser(goalId, userId);
+  async getAllGoals() {
+    return await Goal.find()
+      .populate('studentId', 'name email')
+      .populate('phaseId', 'title phaseNumber')
+      .sort({ createdAt: -1 });
+  }
+
+  /**
+   * Retrieve a single goal by its MongoDB _id.
+   * @param {string} id - The goal's ObjectId
+   * @returns {Promise<Object>} - The found goal document
+   */
+  async getGoalById(id) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new AppError('Invalid Goal ID format.', 400);
+    }
+
+    const goal = await Goal.findById(id)
+      .populate('studentId', 'name email')
+      .populate('phaseId', 'title phaseNumber');
+
     if (!goal) {
-      throw new AppError('Goal not found or access denied.', 404);
+      throw new AppError(`Goal with ID ${id} not found.`, 404);
     }
     return goal;
   }
 
   /**
-   * Business logic to update a specific goal.
-   * @param {string} goalId - Unique ID of the goal
-   * @param {string} userId - Owner of the goal
-   * @param {Object} updateData - Update values
-   * @returns {Promise<Object>} Updated goal document
+   * Update a goal by ID.
+   * @param {string} id - The goal's ObjectId
+   * @param {Object} data - Fields to update
+   * @returns {Promise<Object>} - The updated goal document
    */
-  async updateGoal(goalId, userId, updateData) {
-    const updatedGoal = await goalRepository.updateGoal(goalId, userId, updateData);
-    if (!updatedGoal) {
-      throw new AppError('Goal not found or access denied.', 404);
+  async updateGoal(id, data) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new AppError('Invalid Goal ID format.', 400);
     }
-    return updatedGoal;
+
+    data = this._normalizeData(data);
+
+    // If studentId is updated, validate it
+    if (data.studentId) {
+      if (!mongoose.Types.ObjectId.isValid(data.studentId)) {
+        throw new AppError('Invalid student ID format.', 400);
+      }
+      const studentExists = await User.exists({ _id: data.studentId });
+      if (!studentExists) {
+        throw new AppError('User with the provided ID does not exist.', 400);
+      }
+    }
+
+    // If phaseId is updated, validate it
+    if (data.phaseId) {
+      if (!mongoose.Types.ObjectId.isValid(data.phaseId)) {
+        throw new AppError('Invalid phase ID format.', 400);
+      }
+      const phaseExists = await Phase.exists({ _id: data.phaseId });
+      if (!phaseExists) {
+        throw new AppError('Phase with the provided ID does not exist.', 400);
+      }
+    }
+
+    const goal = await Goal.findByIdAndUpdate(id, data, {
+      new: true,
+      runValidators: true,
+    })
+      .populate('studentId', 'name email')
+      .populate('phaseId', 'title phaseNumber');
+
+    if (!goal) {
+      throw new AppError(`Goal with ID ${id} not found.`, 404);
+    }
+    return goal;
   }
 
   /**
-   * Business logic to delete a specific goal.
-   * @param {string} goalId - Unique ID of the goal
-   * @param {string} userId - Owner of the goal
-   * @returns {Promise<Object>} Deleted goal document
+   * Delete a goal by ID.
+   * @param {string} id - The goal's ObjectId
+   * @returns {Promise<Object>} - The deleted goal document
    */
-  async deleteGoal(goalId, userId) {
-    const deletedGoal = await goalRepository.deleteGoal(goalId, userId);
-    if (!deletedGoal) {
-      throw new AppError('Goal not found or access denied.', 404);
+  async deleteGoal(id) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new AppError('Invalid Goal ID format.', 400);
     }
-    return deletedGoal;
+
+    const goal = await Goal.findByIdAndDelete(id);
+    if (!goal) {
+      throw new AppError(`Goal with ID ${id} not found.`, 404);
+    }
+    return goal;
   }
 }
 
