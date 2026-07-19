@@ -18,6 +18,13 @@ const taskSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Phase to which this task (goal) belongs
+    phase: {
+      type: Number,
+      required: true,
+      default: 1,
+    },
+
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt fields

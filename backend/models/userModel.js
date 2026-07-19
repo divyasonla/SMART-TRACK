@@ -3,8 +3,13 @@ const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema(
   {
+    fullName: {
+      type: String,
+      trim: true,
+    },
     name: {
       type: String,
+      trim: true,
       required: [true, "Please provide your name"],
       trim: true,
       minlength: [2, "Name must be at least 2 characters"],
@@ -52,6 +57,19 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+
+    otp: {
+      type: String,
+      default: null,
+    },
+
+    otpExpiry: {
+    },
+
+    resetPasswordExpire: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
@@ -59,6 +77,10 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+// Hash Password pre-save hook (checks if already hashed)
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
+  if (this.password && this.password.startsWith("$2")) return;
 // Hash Password
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;

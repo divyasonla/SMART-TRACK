@@ -12,6 +12,43 @@ class GoalService {
   /**
    * Normalize input fields to support both formats (e.g., student/studentId, phase/phaseId)
    */
+  async createGoal(userId, goalData) {
+    // Determine the current active phase for the user and associate it with the new goal
+    const UserProgressService = require('../services/userProgressService');
+    const activePhase = await UserProgressService.getCurrentActivePhase(userId);
+    const completeGoalData = {
+      ...goalData,
+      user: userId,
+      phase: activePhase ? activePhase.number : 1,
+    };
+    return await goalRepository.createGoal(completeGoalData);
+  }
+    // Determine the current active phase for the user and associate it with the new goal
+    const UserProgressService = require('../services/userProgressService');
+    const activePhase = await UserProgressService.getCurrentActivePhase(userId);
+    const completeGoalData = {
+      ...goalData,
+      user: userId,
+      phase: activePhase ? activePhase.number : 1,
+    };
+    return await goalRepository.createGoal(completeGoalData);
+  }
+
+    const UserProgressService = require('../services/userProgressService');
+    const activePhase = await UserProgressService.getCurrentActivePhase(userId);
+    const completeGoalData = {
+      ...goalData,
+      user: userId,
+      phase: activePhase ? activePhase.number : 1,
+    };
+    return await goalRepository.createGoal(completeGoalData);
+    // Injects the authenticated user ID to tie ownership
+    const completeGoalData = {
+      ...goalData,
+      user: userId,
+    };
+
+    return await goalRepository.createGoal(completeGoalData);
   _normalizeData(data) {
     if (data.student && !data.studentId) {
       data.studentId = data.student;
