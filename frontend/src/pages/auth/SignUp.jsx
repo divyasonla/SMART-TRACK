@@ -22,9 +22,21 @@ export const SignUp = () => {
     setError('');
 
     try {
+<<<<<<< Updated upstream
       const data = await registerUser(payload);
       localStorage.setItem('smart-track-auth', JSON.stringify(data));
       navigate('/phases', { replace: true });
+=======
+      await signup({
+        name,
+        email,
+        campus,
+        gender,
+        joiningDate,
+        password,
+      });
+      navigate('/phases');
+>>>>>>> Stashed changes
     } catch (err) {
       setError(err.message || 'Unable to create your account.');
     } finally {
@@ -86,14 +98,24 @@ export const SignUp = () => {
                   options={campusOptions}
                   name="campus"
                   required
+<<<<<<< Updated upstream
                   defaultValue=""
+=======
+                  disabled={loading}
+                  
+>>>>>>> Stashed changes
                 />
                 <Select
                   label="Gender"
                   options={genderOptions}
                   name="gender"
                   required
+<<<<<<< Updated upstream
                   defaultValue=""
+=======
+                  disabled={loading}
+                  
+>>>>>>> Stashed changes
                 />
                 <div className="md:col-span-2">
                   <Input
