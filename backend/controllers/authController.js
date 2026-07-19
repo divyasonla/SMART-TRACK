@@ -1,241 +1,137 @@
-const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
-const validator = require('validator');
-const User = require('../models/userModel');
-const nodemailer = require('nodemailer');
-const { MailtrapTransport } = require('mailtrap');
-// Helper to generate JWT
-const generateToken = (id) => {
-  const secret = process.env.JWT_SECRET || 'defaultsecret';
-  return jwt.sign({ id }, secret, { expiresIn: '1d' });
-};
-const bcrypt = require("bcryptjs");
+const authService = require('../services/authService');
+
 /**
- * Controller to handle user registration.
- * Responds with 201 Created and the user document + token.
+ * Signup / Register controller
  */
-exports.register = async (req, res) => {
+const signup = async (req, res) => {
   try {
-    const { name, email, password, campus, gender } = req.body;
+    const { fullName, name, email, password, confirmPassword } = req.body;
+    const userFullName = fullName || name;
+    const userConfirmPass = confirmPassword || password;
 
-    if (!name || !email || !password || !campus || !gender) {
-      return res.status(400).json({
-        success: false,
-        message: "All fields are required",
-      });
-    }
-
-    if (!validator.isEmail(email)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid email address",
-      });
-    }
-
-    const existingUser = await User.findOne({ email });
-
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "Email already exists",
-      });
-    }
-
-    const user = await User.create({
-      name,
+    const userData = await authService.signup({
+      fullName: userFullName,
       email,
       password,
-      campus,
-      gender,
+      confirmPassword: userConfirmPass
     });
 
-    // Generate JWT token for the newly registered user
-    const token = generateToken(user._id);
-
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
-      message: "User Registered Successfully",
-      data: user,
-      token,
+      message: 'Account created successfully! Please log in.',
+      data: userData
     });
-  } catch (err) {
-    res.status(500).json({
+  } catch (error) {
+    const status = error.status || error.statusCode || 500;
+    return res.status(status).json({
       success: false,
-      message: err.message,
+      message: error.message || 'An error occurred during registration'
     });
   }
 };
 
+const register = signup;
+
 /**
- * Controller to handle user login.
- * Responds with 200 OK and the user document + token.
+ * Login controller
  */
-exports.login = async (req, res) => {
+const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    const userData = await authService.login({ email, password });
 
-    if (!validator.isEmail(email)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid Email",
-      });
-    }
-
-    const user = await User.findOne({ email }).select("+password");
-
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    const isMatch = await user.comparePassword(password);
-
-    if (!isMatch) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid Password",
-      });
-    }
-
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: "Login Successful",
-      data: user,
-      token: generateToken(user._id),
+      message: 'Login successful!',
+      data: userData
     });
-  } catch (err) {
-    res.status(500).json({
+  } catch (error) {
+    const status = error.status || error.statusCode || 500;
+    return res.status(status).json({
       success: false,
-      message: err.message,
+      message: error.message || 'An error occurred during login'
     });
   }
 };
 
 /**
- * Controller to get the profile of the currently logged-in user.
+ * Forgot Password controller
  */
-exports.forgotPassword = async (req, res) => {
-    try {
-      const { email } = req.body;
-
-      if (!validator.isEmail(email)) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid Email",
-        });
-      }
-
-      const user = await User.findOne({ email });
-
-      if (!user) {
-        return res.status(404).json({
-          success: false,
-          message: "User not found",
-        });
-      }
-
-      // Generate a 6‑digit OTP (or keep the hex token as OTP)
-      const resetToken = Math.floor(100000 + Math.random() * 900000).toString();
-
-      user.resetPasswordToken = resetToken;
-      user.resetPasswordExpire = Date.now() + 15 * 60 * 1000; // 15 minutes
-
-      await user.save({ validateBeforeSave: false });
-
-      // ---- Mailtrap/SMTP OTP email sending ----
-      try {
-        const host = process.env.SMTP_HOST;
-        const port = Number(process.env.SMTP_PORT) || 587;
-        const fromEmail = process.env.SMTP_FROM || "divyasonla@navgurukul.org";
-        const emailBody = `Your OTP for resetting your password is: ${resetToken}. It will expire in 15 minutes.`;
-
-        const transport = nodemailer.createTransport({
-          host,
-          port,
-          secure: process.env.SMTP_SECURE === 'true',
-          auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS
-          }
-        });
-
-        console.log("=========================================");
-        console.log("🚀 SENDING PASSWORD RESET EMAIL:");
-        console.log(`📡 SMTP Host: ${host}:${port}`);
-        console.log(`✉️ From:      ${fromEmail}`);
-        console.log(`✉️ To:        ${email}`);
-        console.log(`📝 Subject:   Your Password Reset OTP`);
-        console.log(`💬 Message:   ${emailBody}`);
-        console.log("=========================================");
-
-        await transport.sendMail({
-          from: fromEmail,
-          to: email,
-          subject: 'Your Password Reset OTP',
-          text: emailBody,
-        });
-      } catch (mailErr) {
-        console.error('Error sending reset OTP email:', mailErr);
-        return res.status(500).json({
-          success: false,
-          message: 'Failed to send reset email. Please try again later.',
-        });
-      }
-
-      res.status(200).json({
-        success: true,
-        message: "Reset OTP sent to email",
-      });
-    } catch (err) {
-      res.status(500).json({
-        success: false,
-        message: err.message,
-      });
-    }
-  };
-/**
- * Controller to test Admin-only access.
- */
-exports.resetPassword = async (req, res) => {
+const forgotPassword = async (req, res) => {
   try {
-    const token = req.body.token || req.params.token;
-    const { password } = req.body;
+    const { email } = req.body;
+    const result = await authService.forgotPassword(email);
 
-    if (!token) {
-      return res.status(400).json({
-        success: false,
-        message: 'Token is required',
-      });
-    }
-
-    const user = await User.findOne({
-      resetPasswordToken: token,
-      resetPasswordExpire: { $gt: Date.now() },
-    });
-
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid or expired token',
-      });
-    }
-
-    user.password = password;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
-
-    await user.save();
-
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: 'Password Reset Successfully',
+      message: result.message,
+      data: { email: result.email }
     });
-  } catch (err) {
-    res.status(500).json({
+  } catch (error) {
+    const status = error.status || error.statusCode || 500;
+    return res.status(status).json({
       success: false,
-      message: err.message,
+      message: error.message || 'An error occurred while requesting OTP'
     });
   }
+};
+
+/**
+ * Verify OTP controller
+ */
+const verifyOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    const result = await authService.verifyOtp({ email, otp });
+
+    return res.status(200).json({
+      success: true,
+      message: result.message,
+      data: { email: result.email, isVerified: result.isVerified }
+    });
+  } catch (error) {
+    const status = error.status || error.statusCode || 500;
+    return res.status(status).json({
+      success: false,
+      message: error.message || 'An error occurred while verifying OTP'
+    });
+  }
+};
+
+/**
+ * Reset Password controller
+ */
+const resetPassword = async (req, res) => {
+  try {
+    const { email, newPassword, password, confirmPassword } = req.body;
+    const userNewPassword = newPassword || password;
+    const userConfirmPassword = confirmPassword || userNewPassword;
+
+    const result = await authService.resetPassword({
+      email,
+      newPassword: userNewPassword,
+      confirmPassword: userConfirmPassword
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: result.message,
+      data: { email: result.email }
+    });
+  } catch (error) {
+    const status = error.status || error.statusCode || 500;
+    return res.status(status).json({
+      success: false,
+      message: error.message || 'An error occurred while resetting password'
+    });
+  }
+};
+
+module.exports = {
+  signup,
+  register,
+  login,
+  forgotPassword,
+  verifyOtp,
+  resetPassword
 };

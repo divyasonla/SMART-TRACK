@@ -1,93 +1,56 @@
-// Load environment variables early in the lifecycle
+const path = require('path');
 const dotenv = require('dotenv');
-dotenv.config();
 
-// Handle uncaught exceptions (synchronous bugs that weren't caught anywhere)
-process.on('uncaughtException', (err) => {
-  console.error('UNCAUGHT EXCEPTION! 💥 Shutting down...');
-  console.error(err.name, err.message, err.stack);
-  // Exit immediately because the Node process is in an unclean state
-  process.exit(1);
-});
+// Load environment variables from .env file
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 const express = require('express');
 const cors = require('cors');
-const morgan = require('morgan');
-const helmet = require('helmet');
-const path = require('path');
-
 const connectDB = require('./config/db');
-const taskRoutes = require('./routes/taskRoutes');
 const authRoutes = require('./routes/authRoutes');
-const userProgressRoutes = require('./routes/userProgressRoutes');
-// const goalRoutes = require('./routes/goalRoutes');
-const notFound = require('./middleware/notFound');
-const errorHandler = require('./middleware/errorHandler');
 
-// Initialize the Express application
 const app = express();
+const PORT = process.env.PORT || 5000;
 
-// --- 1. Database Connection ---
+// Connect to MongoDB Database
 connectDB();
 
-// --- 2. Security & Utility Middlewares ---
-// Secure HTTP headers with helmet
-app.use(helmet());
-
-// Enable Cross-Origin Resource Sharing
+// Middleware
 app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// HTTP Request logging (Morgan) - only in development for clean production logs
-if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
-  app.use(morgan('dev'));
-}
+// Serve frontend static files
+const frontendPath = path.join(__dirname, '../frontend');
+app.use(express.static(frontendPath));
 
-// --- 3. Request Body Parsers ---
-// Parse incoming requests with JSON payloads (max 10kb to prevent DOS)
-app.use(express.json({ limit: '10kb' }));
-// Parse URL-encoded bodies (form data submissions)
-app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+// Mount authentication routes (supports both /api/signup and /signup)
+app.use('/api', authRoutes);
+app.use('/', authRoutes);
 
-// --- 4. Static Files ---
-// Serve files from the public folder (e.g. documentation, uploads, assets)
-app.use(express.static(path.join(__dirname, 'public')));
-
-// --- 5. Base & API Routes ---
-// Health check endpoint (helpful for load balancers or docker container health checks)
+// Fallback to login.html for root route if requested directly
 app.get('/', (req, res) => {
-  res.status(200).json({
-    status: 'success',
-    message: 'Welcome to the Production-Ready Backend API Starter!',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
+  res.sendFile(path.join(frontendPath, 'login.html'));
+});
+
+// Start server with fallback port handling
+const startServer = (portToUse) => {
+  const server = app.listen(portToUse, () => {
+    console.log(`\n======================================================`);
+    console.log(`🚀 Authentication Server running on http://localhost:${portToUse}`);
+    console.log(`📁 Serving frontend from: ${frontendPath}`);
+    console.log(`======================================================\n`);
   });
-});
 
-// Mounted API routes
-app.use('/api/v1/tasks', taskRoutes);
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/phases', userProgressRoutes);
-// app.use('/api/v1/goals', goalRoutes);
-
-// --- 6. Error Handling Middlewares ---
-// Fallback route for resources not found (404)
-app.use(notFound);
-
-// Centralized error handler to catch all errors passed to next()
-app.use(errorHandler);
-
-// --- 7. Server Initialization ---
-const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () => {
-  console.log(`Server running in http://localhost:${PORT}`);
-});
-
-// Handle unhandled promise rejections (asynchronous promises that failed without a .catch block)
-process.on('unhandledRejection', (err) => {
-  console.error('UNHANDLED REJECTION! 💥 Shutting down gracefully...');
-  console.error(err.name, err.message);
-  // Gracefully close the server and release ports before exiting
-  server.close(() => {
-    process.exit(1);
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      const nextPort = Number(portToUse) + 1;
+      console.warn(`⚠️ Port ${portToUse} is in use, attempting to start on port ${nextPort}...`);
+      startServer(nextPort);
+    } else {
+      console.error('Server error:', err);
+    }
   });
-});
+};
+
+startServer(PORT);
